@@ -12,13 +12,40 @@
 #endif
 
 #include "blink_lib.h"
+#include <Wire.h>
+#include "libs/RTClib/RTClib.h"
+
+RTC_DS1307 rtc;
 
 void setup() {
-    Serial.begin(9600);                
+    Serial.begin(9600);
+
+    Wire.begin();
+    rtc.begin();
+
+    if (! rtc.isrunning()) {
+        Serial.println("RTC is NOT running!");
+        // following line sets the RTC to the date & time this sketch was compiled
+        //rtc.adjust(DateTime(__DATE__, __TIME__));
+    }
+
     blink_setup(); // Setup for blinking
 }
 
 void loop() {
-    Serial.println(Serial.readString());
+    DateTime now = rtc.now();
+    Serial.print(now.day(), DEC);
+    Serial.print('-');
+    Serial.print(now.month(), DEC);
+    Serial.print('-');
+    Serial.print(now.year(), DEC);
+    Serial.print(' ');
+    Serial.print(now.hour(), DEC);
+    Serial.print(':');
+    Serial.print(now.minute(), DEC);
+    Serial.print(':');
+    Serial.print(now.second(), DEC);
+    Serial.println();
+
     blink(3000); // Blink for a second
 }
