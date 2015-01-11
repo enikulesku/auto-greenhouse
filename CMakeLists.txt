@@ -28,22 +28,28 @@ generate_arduino_library(blink_lib
 #====================================================================#
 # Real-Time Clock library
 #====================================================================#
-generate_arduino_library(RTClib
-    SRCS libs/RTClib/RTClib.cpp
-    HDRS libs/RTClib/RTClib.h)
+generate_arduino_library(RTC-lib
+    SRCS libs/RTC/RTClib.cpp
+    HDRS libs/RTC/RTClib.h)
 #====================================================================#
 # DHT series of temperature/humidity sensors library
 #====================================================================#
-generate_arduino_library(DHTlib
-    SRCS libs/DHTlib/DHT.cpp
-    HDRS libs/DHTlib/DHT.h)
+generate_arduino_library(DHT-lib
+    SRCS libs/DHT/DHT.cpp
+    HDRS libs/DHT/DHT.h)
+#====================================================================#
+# Sunrise library
+#====================================================================#
+generate_arduino_library(Sunrise-lib
+    SRCS libs/Sunrise/Sunrise.cpp
+    HDRS libs/Sunrise/Sunrise.h)
 
 #====================================================================#
 # Firmware
 #====================================================================#
 generate_arduino_firmware(blink
     SRCS blink.cpp
-    LIBS blink_lib RTClib DHTlib
+    LIBS blink_lib RTC-lib DHT-lib Sunrise-lib
     PORT  /dev/ttyACM0
     SERIAL minicom -D @SERIAL_PORT@ -b 9600
     BOARD uno)

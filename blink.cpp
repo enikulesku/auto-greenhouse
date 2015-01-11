@@ -13,12 +13,15 @@
 
 #include "blink_lib.h"
 #include <Wire.h>
-#include "libs/RTClib/RTClib.h"
-#include "libs/DHTlib/DHT.h"
+#include "libs/Sunrise/Sunrise.h"
+#include "libs/RTC/RTClib.h"
+#include "libs/DHT/DHT.h"
 
 RTC_DS1307 rtc;
 
 DHT dht(7, DHT11);
+
+Sunrise mySunrise(47, 31, 2);//Odesa, Ukraine, Europe - Latitude/Longitude and Timezone 	46.5/30.77, +2
 
 void setup() {
     Serial.begin(9600);
@@ -26,6 +29,7 @@ void setup() {
     Wire.begin();
     rtc.begin();
     dht.begin();
+    mySunrise.Civil(); //Actual, Civil, Nautical, Astronomical
 
     if (! rtc.isrunning()) {
         Serial.println("RTC is NOT running!");
@@ -66,6 +70,51 @@ void loop() {
     Serial.print("Temperature: ");
     Serial.print(t);
     Serial.println(" *C");
+
+
+    byte hour, minute;
+    int time;
+    // t= minutes past midnight of sunrise (6 am would be 360)
+    time =mySunrise.Rise(now.month(), now.day()); // (month,day) - january=1
+    if(time >=0){
+        hour =mySunrise.Hour();
+        minute =mySunrise.Minute();
+        Serial.print("The sun rises today 30 at ");
+        Serial.print(hour, DEC);
+        Serial.print(":");
+        if(minute <10) Serial.print("0");
+        Serial.println(minute,DEC);
+    }else{ //
+        Serial.println("There are either penguins or polar bears around here!");
+    }
+    // t= minutes past midnight of sunrise (6 am would be 360)
+    time =mySunrise.Set(now.month(), now.day()); // (month,day) - january=1
+    if(time >=0){
+        hour =mySunrise.Hour();
+        minute =mySunrise.Minute();
+        Serial.print("The sun sets today at ");
+        Serial.print(hour, DEC);
+        Serial.print(":");
+        if(minute <10) Serial.print("0");
+        Serial.println(minute,DEC);
+    }else{ //
+        Serial.println("There are either penguins or polar bears around here!");
+    }
+    // t= minutes past midnight of sunrise (6 am would be 360)
+    time =mySunrise.Noon(now.month(), now.day()); // (month,day) - january=1
+    if(time >=0){
+        hour =mySunrise.Hour();
+        minute =mySunrise.Minute();
+        Serial.print("Noon at ");
+        Serial.print(hour, DEC);
+        Serial.print(":");
+        if(minute <10) Serial.print("0");
+        Serial.print(minute,DEC);
+        Serial.print("   T:");
+//        Serial.println(sunNoon, DEC);
+    }else{ //
+        Serial.println("There are either penguins or polar bears around here!");
+    }
 
     blink(3000); // Blink for a second
 }
