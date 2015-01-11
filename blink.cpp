@@ -14,14 +14,18 @@
 #include "blink_lib.h"
 #include <Wire.h>
 #include "libs/RTClib/RTClib.h"
+#include "libs/DHTlib/DHT.h"
 
 RTC_DS1307 rtc;
+
+DHT dht(7, DHT11);
 
 void setup() {
     Serial.begin(9600);
 
     Wire.begin();
     rtc.begin();
+    dht.begin();
 
     if (! rtc.isrunning()) {
         Serial.println("RTC is NOT running!");
@@ -46,6 +50,22 @@ void loop() {
     Serial.print(':');
     Serial.print(now.second(), DEC);
     Serial.println();
+
+    float h = dht.readHumidity();
+    float t = dht.readTemperature();
+
+    // Check if any reads failed and exit early (to try again).
+    if (isnan(h) || isnan(t)) {
+        Serial.println("Failed to read from DHT sensor!");
+        return;
+    }
+
+    Serial.print("Humidity: ");
+    Serial.print(h);
+    Serial.print(" %; ");
+    Serial.print("Temperature: ");
+    Serial.print(t);
+    Serial.println(" *C");
 
     blink(3000); // Blink for a second
 }

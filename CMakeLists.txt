@@ -26,18 +26,24 @@ generate_arduino_library(blink_lib
     HDRS blink_lib.h)
 
 #====================================================================#
-# RTC library
+# Real-Time Clock library
 #====================================================================#
 generate_arduino_library(RTClib
     SRCS libs/RTClib/RTClib.cpp
     HDRS libs/RTClib/RTClib.h)
+#====================================================================#
+# DHT series of temperature/humidity sensors library
+#====================================================================#
+generate_arduino_library(DHTlib
+    SRCS libs/DHTlib/DHT.cpp
+    HDRS libs/DHTlib/DHT.h)
 
 #====================================================================#
 # Firmware
 #====================================================================#
 generate_arduino_firmware(blink
     SRCS blink.cpp
-    LIBS blink_lib RTClib
+    LIBS blink_lib RTClib DHTlib
     PORT  /dev/ttyACM0
-    SERIAL picocom @SERIAL_PORT@
+    SERIAL minicom -D @SERIAL_PORT@ -b 9600
     BOARD uno)
