@@ -16,12 +16,14 @@
 #include "libs/Sunrise/Sunrise.h"
 #include "libs/RTC/RTClib.h"
 #include "libs/DHT/DHT.h"
+#include "libs/LCDI2C/LiquidCrystal_I2C.h"
 
 RTC_DS1307 rtc;
 
 DHT dht(7, DHT11);
 
 Sunrise mySunrise(47, 31, 2);//Odesa, Ukraine, Europe - Latitude/Longitude and Timezone 	46.5/30.77, +2
+LiquidCrystal_I2C lcd(0x27, 20, 4);
 
 void setup() {
     Serial.begin(9600);
@@ -36,6 +38,12 @@ void setup() {
         // following line sets the RTC to the date & time this sketch was compiled
         //rtc.adjust(DateTime(__DATE__, __TIME__));
     }
+
+    lcd.init();                      // initialize the lcd
+
+    // Print a message to the LCD.
+    lcd.backlight();
+    lcd.print("Hello, world!");
 
     blink_setup(); // Setup for blinking
 }

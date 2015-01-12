@@ -43,13 +43,19 @@ generate_arduino_library(DHT-lib
 generate_arduino_library(Sunrise-lib
     SRCS libs/Sunrise/Sunrise.cpp
     HDRS libs/Sunrise/Sunrise.h)
+#====================================================================#
+# LCDI2C library
+#====================================================================#
+generate_arduino_library(LCDI2C-lib
+    SRCS libs/LCDI2C/LiquidCrystal_I2C.cpp
+    HDRS libs/LCDI2C/LiquidCrystal_I2C.h)
 
 #====================================================================#
 # Firmware
 #====================================================================#
 generate_arduino_firmware(blink
     SRCS blink.cpp
-    LIBS blink_lib RTC-lib DHT-lib Sunrise-lib
+    LIBS blink_lib RTC-lib DHT-lib Sunrise-lib LCDI2C-lib
     PORT  /dev/ttyACM0
     SERIAL minicom -D @SERIAL_PORT@ -b 9600
     BOARD uno)
