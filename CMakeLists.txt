@@ -50,18 +50,18 @@ generate_arduino_library(LCDI2C-lib
     SRCS libs/LCDI2C/LiquidCrystal_I2C.cpp
     HDRS libs/LCDI2C/LiquidCrystal_I2C.h)
 #====================================================================#
-# Keypad library
+# i2ckeypad library
 #====================================================================#
-generate_arduino_library(Keypad-lib
-    SRCS libs/Keypad/Keypad.cpp libs/Keypad/utility/Key.cpp
-    HDRS libs/Keypad/Keypad.h libs/Keypad/utility/Key.h)
+generate_arduino_library(i2ckeypad-lib
+    SRCS libs/i2ckeypad/i2ckeypad.cpp
+    HDRS libs/i2ckeypad/i2ckeypad.h)
 
 #====================================================================#
 # Firmware
 #====================================================================#
 generate_arduino_firmware(blink
     SRCS blink.cpp
-    LIBS blink_lib RTC-lib DHT-lib Sunrise-lib LCDI2C-lib Keypad-lib
+    LIBS blink_lib RTC-lib DHT-lib Sunrise-lib LCDI2C-lib i2ckeypad-lib
     PORT  /dev/ttyACM0
     SERIAL minicom -D @SERIAL_PORT@ -b 9600
     BOARD uno)
