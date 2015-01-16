@@ -34,10 +34,10 @@
 #include <i2ckeypad.h>
 
 #define ROWS 4
-#define COLS 3
+#define COLS 4
 
 // With A0, A1 and A2 of PCF8574 to ground I2C address is 0x20
-#define PCF8574_ADDR 0x20
+#define PCF8574_ADDR 0x27
 
 
 i2ckeypad kpd = i2ckeypad(PCF8574_ADDR, ROWS, COLS);

@@ -56,15 +56,14 @@
  *  Default mapping is for sparkfun 4x3 keypad
  */
 
-#define COL0  2  // P2 of PCF8574, col0 is usually pin 3 of 4x3 keypads
-#define COL1  0  // P0 of PCF8574, col1 is usually pin 1 of 4x3 keypads
-#define COL2  4  // P4 of PCF8574, col2 is usually pin 5 of 4x3 keypads
-#define COL3  7  // sorry, don't have a 4x4 keypad to try it
-#define ROW0  1  // P1 of PCF8574, row0 is usually pin 2 of 4x3 keypads
-#define ROW1  6  // P6 of PCF8574, row1 is usually pin 7 of 4x3 keypads
-#define ROW2  5  // P5 of PCF8574, row2 is usually pin 6 of 4x3 keypads
-#define ROW3  3  // P3 of PCF8574, row3 is usually pin 4 of 4x3 keypads
-
+#define ROW0 0
+#define ROW1 1
+#define ROW2 2
+#define ROW3 3
+#define COL0 4
+#define COL1 5
+#define COL2 6
+#define COL3 7
 
 /*
  *  KEYPAD KEY MAPPING
@@ -89,7 +88,7 @@ const char keymap[4][5] =
 
 // Default row and col pin counts
 int num_rows = 4;
-int num_cols = 3;
+int num_cols = 4;
 
 // PCF8574 i2c address
 int pcf8574_i2c_addr;
