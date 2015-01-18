@@ -19,7 +19,7 @@
 
 RTC_DS1307 rtc;
 
-DHT dht(7, DHT11);
+DHT dht(2, DHT11);
 
 Sunrise mySunrise(47, 31, 2);//Odesa, Ukraine, Europe - Latitude/Longitude and Timezone 	46.5/30.77, +2
 LiquidCrystal_I2C lcd(0x20, 20, 4);
