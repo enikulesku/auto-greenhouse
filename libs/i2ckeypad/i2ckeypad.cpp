@@ -43,17 +43,12 @@
 
 #include "i2ckeypad.h"
 #include "Wire.h"
-//
-//extern "C" {
-//  #include "WConstants.h"
-//}
-
 
 /*
  *  PIN MAPPING
  *
  *  Here you can change your wire mapping between your keypad and PCF8574
- *  Default mapping is for sparkfun 4x3 keypad
+ *  Default mapping is for sparkfun 4x4 keypad
  */
 
 #define ROW0 0

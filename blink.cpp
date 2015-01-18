@@ -5,25 +5,26 @@
  
   This example code is in the public domain.
  */
-#if ARDUINO >= 100
-    #include "Arduino.h"
-#else
-    #include "WProgram.h"
-#endif
+
+#include "Arduino.h"
+#include <Wire/Wire.h>
 
 #include "blink_lib.h"
-#include <Wire.h>
+
 #include "libs/Sunrise/Sunrise.h"
 #include "libs/RTC/RTClib.h"
 #include "libs/DHT/DHT.h"
 #include "libs/LCDI2C/LiquidCrystal_I2C.h"
+#include "libs/i2ckeypad/i2ckeypad.h"
 
 RTC_DS1307 rtc;
 
 DHT dht(7, DHT11);
 
 Sunrise mySunrise(47, 31, 2);//Odesa, Ukraine, Europe - Latitude/Longitude and Timezone 	46.5/30.77, +2
-LiquidCrystal_I2C lcd(0x27, 20, 4);
+LiquidCrystal_I2C lcd(0x20, 20, 4);
+
+i2ckeypad kpd = i2ckeypad(0x27, 4, 4);
 
 void setup() {
     Serial.begin(9600);
@@ -40,6 +41,8 @@ void setup() {
     }
 
     lcd.init();                      // initialize the lcd
+
+    kpd.init();
 
     // Print a message to the LCD.
     lcd.backlight();
@@ -124,5 +127,25 @@ void loop() {
         Serial.println("There are either penguins or polar bears around here!");
     }
 
-    blink(3000); // Blink for a second
+    lcd.clear();
+
+    lcd.print(now.day(), DEC);
+    lcd.print('-');
+    lcd.print(now.month(), DEC);
+    lcd.print('-');
+    lcd.print(now.year(), DEC);
+    lcd.print(' ');
+    lcd.print(now.hour(), DEC);
+    lcd.print(':');
+    lcd.print(now.minute(), DEC);
+    lcd.print(':');
+    lcd.print(now.second(), DEC);
+
+    char key = kpd.get_key();
+
+    if(key != '\0') {
+        lcd.println(key);
+    }
+
+    blink(500); // Blink for a second
 }
