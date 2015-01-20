@@ -2,7 +2,7 @@
 # Author: enikulesku                                                          #
 # Date:   10.01.2015                                                          #
 #                                                                             #
-# Description: AutoGreenhouse                                             #
+# Description: AutoGreenhouse                                                 #
 #                                                                             #
 #=============================================================================#
 set(CMAKE_TOOLCHAIN_FILE cmake/ArduinoToolchain.cmake) # Arduino Toolchain
@@ -15,15 +15,15 @@ cmake_minimum_required(VERSION 2.8)
 #====================================================================#
 project(AutoGreenhouse C CXX)
 
-print_board_list()
-print_programmer_list()
+#print_board_list()
+#print_programmer_list()
 
 #====================================================================#
-# Blink library
+# Greenhouse library
 #====================================================================#
-generate_arduino_library(blink_lib
-    SRCS blink_lib.cpp
-    HDRS blink_lib.h)
+generate_arduino_library(greenhouse-lib
+    SRCS libs/greenhouse/greenhouse.cpp
+    HDRS libs/greenhouse/greenhouse.h)
 
 #====================================================================#
 # Real-Time Clock library
@@ -60,8 +60,8 @@ generate_arduino_library(i2ckeypad-lib
 # Firmware
 #====================================================================#
 generate_arduino_firmware(blink
-    SRCS blink.cpp
-    LIBS blink_lib RTC-lib DHT-lib Sunrise-lib LCDI2C-lib i2ckeypad-lib
+    SRCS auto_greenhouse.cpp
+    LIBS greenhouse-lib RTC-lib DHT-lib Sunrise-lib LCDI2C-lib i2ckeypad-lib
     PORT  /dev/ttyACM0
     SERIAL minicom -D @SERIAL_PORT@ -b 9600
     BOARD uno)

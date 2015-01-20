@@ -9,7 +9,7 @@
 #include "Arduino.h"
 #include <Wire/Wire.h>
 
-#include "blink_lib.h"
+#include "libs/greenhouse/greenhouse.h"
 
 #include "libs/Sunrise/Sunrise.h"
 #include "libs/RTC/RTClib.h"
