@@ -1,17 +1,18 @@
 #include <stdint.h>
 
-/**
- * Setup for blinking.
- *
- * @param pin - pin number
- **/
-void blink_setup(uint8_t pin=13);
+#include "Arduino.h"
 
+#include "Wire/Wire.h"
+#include "../DHT/DHT.h"
+#include "../RTC/RTClib.h"
+#include "../Sunrise/Sunrise.h"
 
-/**
- * Blink a single time for the specified duration.
- *
- * @param duration - duration in miliseconds
- * @param pin      - pin number
- **/
-void blink(unsigned long duration, uint8_t pin=13);
+class Greenhouse {
+private:
+    DHT* _dht;
+    RTC_DS1307* _rtc;
+    Sunrise* _sunrise;
+
+public:
+    Greenhouse(DHT* dht, RTC_DS1307* rtc, Sunrise* sunrise);
+};

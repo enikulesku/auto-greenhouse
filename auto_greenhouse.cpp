@@ -7,13 +7,9 @@
  */
 
 #include "Arduino.h"
-#include <Wire/Wire.h>
 
 #include "libs/greenhouse/greenhouse.h"
 
-#include "libs/Sunrise/Sunrise.h"
-#include "libs/RTC/RTClib.h"
-#include "libs/DHT/DHT.h"
 #include "libs/LCDI2C/LiquidCrystal_I2C.h"
 #include "libs/i2ckeypad/i2ckeypad.h"
 
@@ -47,8 +43,6 @@ void setup() {
     // Print a message to the LCD.
     lcd.backlight();
     lcd.print("Hello, world!");
-
-    blink_setup(); // Setup for blinking
 }
 
 void loop() {
@@ -147,5 +141,5 @@ void loop() {
         lcd.println(key);
     }
 
-    blink(500); // Blink for a second
+    delay(1000);
 }
