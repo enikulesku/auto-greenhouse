@@ -24,8 +24,8 @@ i2ckeypad kpd = i2ckeypad(0x27, 4, 4);
 
 void setup() {
     Serial.begin(9600);
-
     Wire.begin();
+
     rtc.begin();
     dht.begin();
     mySunrise.Civil(); //Actual, Civil, Nautical, Astronomical
