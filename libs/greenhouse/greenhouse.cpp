@@ -39,6 +39,18 @@ void Greenhouse::loadSensorsDataReal() {
     soilMoisture = digitalRead(soilMoistureSensorPin);
 };
 
-void Greenhouse::doControl() {
-    //ToDo: put logic here
+void Greenhouse::doControlDebug() {
+    //ToDo: log start to serial
+
+    process();
+
+    //ToDo: log end to serial
 };
+
+void Greenhouse::doControlReal() {
+    process();
+};
+
+void Greenhouse::process() {
+    //ToDo: put logic here
+}

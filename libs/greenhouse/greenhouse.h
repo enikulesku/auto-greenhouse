@@ -40,6 +40,11 @@ private:
 
     void loadSensorsDataReal();
     void loadSensorsDataDebug();
+
+    void doControlDebug();
+    void doControlReal();
+
+    void process();
 public:
     void init();
 
@@ -51,7 +56,13 @@ public:
         }
     };
 
-    void doControl();
+    void doControl() {
+        if (debugMode) {
+            doControlDebug();
+        } else {
+            doControlReal();
+        }
+    };
 
     void setDebugMode(boolean debugMode) {
         Greenhouse::debugMode = debugMode;

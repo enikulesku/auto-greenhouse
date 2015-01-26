@@ -59,7 +59,7 @@ generate_arduino_library(i2ckeypad-lib
 #====================================================================#
 # Firmware
 #====================================================================#
-generate_arduino_firmware(blink
+generate_arduino_firmware(greenhouse
     SRCS auto_greenhouse.cpp
     LIBS greenhouse-lib RTC-lib DHT-lib Sunrise-lib LCDI2C-lib i2ckeypad-lib
     PORT  /dev/ttyACM0
