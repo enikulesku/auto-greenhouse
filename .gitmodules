@@ -1,6 +1,0 @@
-[submodule "libs/RTC"]
-	path = libs/RTC
-	url = git@github.com:adafruit/RTClib.git
-[submodule "libs/DHT"]
-	path = libs/DHT
-	url = git@github.com:adafruit/DHT-sensor-library.git
