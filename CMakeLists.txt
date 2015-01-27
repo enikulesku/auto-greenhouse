@@ -63,5 +63,5 @@ generate_arduino_firmware(greenhouse
     SRCS auto_greenhouse.cpp
     LIBS greenhouse-lib RTC-lib DHT-lib Sunrise-lib LCDI2C-lib i2ckeypad-lib
     PORT  /dev/ttyACM0
-    SERIAL minicom -D @SERIAL_PORT@ -b 9600
+    SERIAL python2.7 ${CMAKE_CURRENT_SOURCE_DIR}/int_test.py -D @SERIAL_PORT@ -b 9600
     BOARD uno)
