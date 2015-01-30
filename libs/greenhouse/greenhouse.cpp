@@ -1,6 +1,11 @@
 #include "greenhouse.h"
 
 void Greenhouse::init() {
+    if (debugMode) {
+        //ToDo: serial print init
+        return;
+    }
+
     // Sensors initialization
     pinMode(soilMoistureSensorPin, INPUT);
 
