@@ -55,9 +55,9 @@ void setup() {
     greenhouse.setHumidifierPin(HUMIDIFIER_PIN);
     greenhouse.setHeaterPin(HEATER_PIN);
 
-    greenhouse.init();
+    greenhouse.setDebugMode(true); //ToDo: get it from CMake config
 
-    greenhouse.setDebugMode(true); //ToDo: runtime definition
+    greenhouse.init();
 
     lcd.init();                      // initialize the lcd
 

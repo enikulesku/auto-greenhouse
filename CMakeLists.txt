@@ -65,3 +65,9 @@ generate_arduino_firmware(greenhouse
     PORT  /dev/ttyACM0
     SERIAL python2.7 ${CMAKE_CURRENT_SOURCE_DIR}/int_test.py -D @SERIAL_PORT@ -b 9600
     BOARD uno)
+
+#====================================================================#
+# Integration test
+#====================================================================#
+add_custom_target(int-test
+    DEPENDS greenhouse-upload greenhouse-serial)
