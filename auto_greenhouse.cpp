@@ -15,7 +15,7 @@
 
 //Sensors
 #define DHT_PIN                     2
-#define SOIL_MOISTURE_SENSOR_PIN    3
+#define SOIL_MOISTURE_SENSOR_PIN    0 //A0
 #define LATITUDE                    47 //{
 #define LONGITUDE                   31 //{ Odesa, Ukraine, Europe - Latitude/Longitude and Timezone 	46.5/30.77, +2;
 #define TIMEZONE                    +2 //{
@@ -35,7 +35,7 @@ Sunrise* mySunrise = new Sunrise(LATITUDE, LONGITUDE, TIMEZONE);
 
 Greenhouse greenhouse;
 
-LiquidCrystal_I2C lcd(0x20, 20, 4);
+LiquidCrystal_I2C* lcd = new LiquidCrystal_I2C(0x20, 20, 4);
 
 i2ckeypad kpd = i2ckeypad(0x27, 4, 4);
 
@@ -55,23 +55,26 @@ void setup() {
     greenhouse.setHumidifierPin(HUMIDIFIER_PIN);
     greenhouse.setHeaterPin(HEATER_PIN);
 
-    greenhouse.setDebugMode(true); //ToDo: get it from CMake config
+    greenhouse.setDebugMode(false); //ToDo: get it from CMake config
 
     greenhouse.init();
 
-    lcd.init();                      // initialize the lcd
+    lcd->init();                      // initialize the lcd
 
     kpd.init();
 
     // Print a message to the LCD.
-    lcd.backlight();
-    lcd.print("Hello, world!");
+    lcd->backlight();
+    lcd->print("Hello, world!");
 }
 
 void loop() {
     greenhouse.loadSensorsData();
 
     greenhouse.doControl();
+
+    lcd->clear();
+    lcd->print(analogRead(SOIL_MOISTURE_SENSOR_PIN));
 
     delay(1000); //ToDo: review delay
 }

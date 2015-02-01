@@ -6,9 +6,6 @@ void Greenhouse::init() {
         return;
     }
 
-    // Sensors initialization
-    pinMode(soilMoistureSensorPin, INPUT);
-
     rtc->begin();
     dht->begin();
     sunriseResolver->Civil(); //Actual, Civil, Nautical, Astronomical
@@ -41,7 +38,7 @@ void Greenhouse::loadSensorsDataReal() {
 
     humidity = dht->readHumidity();
     temperature = dht->readTemperature();
-    soilMoisture = digitalRead(soilMoistureSensorPin);
+    soilMoisture = analogRead(soilMoistureSensorPin);
 };
 
 void Greenhouse::doControlDebug() {
