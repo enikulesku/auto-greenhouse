@@ -7,16 +7,13 @@
 #include "../RTC/RTClib.h"
 #include "../Sunrise/Sunrise.h"
 
+#define START    '^'
+#define END      '$'
+#define SEP   ','
+
 class Greenhouse {
 private:
     boolean debugMode;
-
-    // Sensors
-    DHT* dht;
-    RTC_DS1307* rtc;
-    Sunrise* sunriseResolver;
-    uint8_t soilMoistureSensorPin;
-
     // Sensors state
     DateTime dateTime;
     DateTime sunrise;
@@ -24,7 +21,7 @@ private:
 
     float humidity;
     float temperature;
-    float soilMoisture;
+    int soilMoisture;
 
     //Controls
     uint8_t waterPumpPin;
@@ -45,6 +42,12 @@ private:
     void doControlReal();
 
     void process();
+
+    // Debug mode
+
+
+
+    void printCommand(char const* key, char const* value);
 public:
     void init();
 
@@ -64,24 +67,36 @@ public:
         }
     };
 
+    //Sensors
+
+
+    void setDateTime(DateTime const &dateTime) {
+        Greenhouse::dateTime = dateTime;
+    }
+
+    void setSunrise(DateTime const &sunrise) {
+        Greenhouse::sunrise = sunrise;
+    }
+
+    void setSunset(DateTime const &sunset) {
+        Greenhouse::sunset = sunset;
+    }
+
+    void setHumidity(float humidity) {
+        Greenhouse::humidity = humidity;
+    }
+
+    void setTemperature(float temperature) {
+        Greenhouse::temperature = temperature;
+    }
+
+    void setSoilMoisture(int soilMoisture) {
+        Greenhouse::soilMoisture = soilMoisture;
+    }
+
+//Control
     void setDebugMode(boolean debugMode) {
         Greenhouse::debugMode = debugMode;
-    }
-
-    void set_dht(DHT *_dht) {
-        Greenhouse::dht = _dht;
-    }
-
-    void set_rtc(RTC_DS1307 *_rtc) {
-        Greenhouse::rtc = _rtc;
-    }
-
-    void set_sunrise(Sunrise *sunriseResolver) {
-        Greenhouse::sunriseResolver = sunriseResolver;
-    }
-
-    void setSoilMoistureSensorPin(uint8_t soilMoistureSensorPin) {
-        Greenhouse::soilMoistureSensorPin = soilMoistureSensorPin;
     }
 
     void setWaterPumpPin(uint8_t waterPumpPin) {
