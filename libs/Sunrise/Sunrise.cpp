@@ -26,19 +26,19 @@ void Sunrise::Astronomical(){
   zenith=1.884955592153876;
 }
 
-int Sunrise::Rise(unsigned char  month, unsigned char  day){
+int Sunrise::Rise(uint8_t  month, uint8_t  day){
   return Sunrise::Compute(month, day, 1);
 }
 
-int Sunrise::Set(unsigned char  month, unsigned char  day){
+int Sunrise::Set(uint8_t  month, uint8_t  day){
   return Sunrise::Compute(month, day, 0);
 }
 
-int Sunrise::Noon(unsigned char  month, unsigned char  day){
+int Sunrise::Noon(uint8_t  month, uint8_t  day){
 	return Sunrise::Compute(month, day, 2);
 }
 
-int Sunrise::Compute(unsigned char  month, unsigned char  day, int rs) {
+int Sunrise::Compute(uint8_t  month, uint8_t  day, int rs) {
   float y, decl, eqt, ha;
   unsigned char a;
   int doy, minutes;
@@ -101,10 +101,10 @@ int Sunrise::Compute(unsigned char  month, unsigned char  day, int rs) {
 }
 
 
-unsigned char Sunrise::Hour(){
+uint8_t Sunrise::Hour(){
 	return theHour;
 }
 
-unsigned char Sunrise::Minute(){
+uint8_t Sunrise::Minute(){
 	return theMinute;
 }

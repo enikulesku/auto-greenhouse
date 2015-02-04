@@ -8,16 +8,16 @@ class Sunrise{
   void Civil();
   void Nautical();
   void Astronomical();
-  int Rise(unsigned char ,unsigned char );
-  int Set(unsigned char ,unsigned char );
-  int Noon(unsigned char ,unsigned char );
-  unsigned char Hour();
-  unsigned char Minute();
+  int Rise(uint8_t, uint8_t);
+  int Set(uint8_t, uint8_t);
+  int Noon(uint8_t, uint8_t);
+  uint8_t Hour();
+  uint8_t Minute();
   
   private:
-  int Compute(unsigned char ,unsigned char, int);
+  int Compute(uint8_t, uint8_t, int);
   float lat,lon, zenith, rd, tz;
-  unsigned char  theHour,theMinute;
+    uint8_t  theHour,theMinute;
 };
 
 #endif

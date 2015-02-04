@@ -2,32 +2,48 @@
 
 void Greenhouse::init() {
     if (debugMode) {
-        printCommand("debugMode", "init");
         return;
     }
 
     // Controls initialization
-    pinMode(waterPumpPin, OUTPUT);
-    pinMode(lampPin, OUTPUT);
-    pinMode(humidifierPin, OUTPUT);
-    pinMode(heaterPin, OUTPUT);
+    for (i = 0; i < CONTROLS_COUNT; i++) {
+        pinMode(controlPins[i], OUTPUT);
+    }
 }
 
-void Greenhouse::loadSensorsDataDebug() {
+void Greenhouse::changeControl(uint8_t controlType, boolean on) {
+    //ToDo: review
+    if (controlStates[controlType] == on) {
+        return;
+    }
 
-    //ToDo: read sensors data from Serial
+    controlStates[controlType] = on;
+    if (on) {
+        controlStartTime[controlType] = timeSeconds;
+    }
+
+
+    if (debugMode) {
+        return;
+    }
+
+    digitalWrite(controlPins[controlType], on ? HIGH : LOW);
 }
-
-void Greenhouse::loadSensorsDataReal() {
-
-};
 
 void Greenhouse::doControlDebug() {
-    printCommand("control", "begin");
-
     process();
 
-    printCommand("control", "end");
+    Serial.print(START);
+
+    for (i = 0; i < CONTROLS_COUNT; i++) {
+        if (i != 0) {
+            Serial.print(SEP);
+        }
+
+        Serial.print(controlStates[i]);
+    }
+
+    Serial.println(END);
 };
 
 void Greenhouse::doControlReal() {
@@ -36,14 +52,4 @@ void Greenhouse::doControlReal() {
 
 void Greenhouse::process() {
     //ToDo: put logic here
-}
-
-void Greenhouse::printCommand(char const* key, char const* value) {
-    Serial.print(START);
-
-    Serial.print(key);
-    Serial.print(SEP);
-    Serial.print(value);
-
-    Serial.print(END);
 }

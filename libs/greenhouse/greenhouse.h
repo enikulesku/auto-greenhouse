@@ -1,63 +1,61 @@
 #include <stdint.h>
+#include <stdint-gcc.h>
 
 #include "Arduino.h"
 
-#include "Wire/Wire.h"
-#include "../DHT/DHT.h"
 #include "../RTC/RTClib.h"
-#include "../Sunrise/Sunrise.h"
 
 #define START    '^'
 #define END      '$'
-#define SEP   ','
+#define SEP      ','
+
+#define CONTROLS_COUNT  4
+#define WATER_PUMP      0
+#define LAMP            1
+#define HUMIDIFIER      2
+#define HEATER          3
 
 class Greenhouse {
 private:
     boolean debugMode;
     // Sensors state
-    DateTime dateTime;
-    DateTime sunrise;
-    DateTime sunset;
+    uint8_t year;
+    uint8_t month;
+    uint8_t day;
+    uint8_t hour;
+    uint8_t minute;
+    uint8_t seconds;
 
-    float humidity;
-    float temperature;
+    long timeSeconds;
+
+    uint8_t sunriseHour;
+    uint8_t sunriseMinute;
+
+    uint8_t sunsetHour;
+    uint8_t sunsetMinute;
+
+    int humidity;
+    int temperature;
     int soilMoisture;
 
     //Controls
-    uint8_t waterPumpPin;
-    uint8_t lampPin;
-    uint8_t humidifierPin;
-    uint8_t heaterPin;
+    uint8_t controlPins[CONTROLS_COUNT];
 
     // Controls state
-    boolean waterPumpOn;
-    boolean lampOn;
-    boolean humidifierOn;
-    boolean heaterOn;
-
-    void loadSensorsDataReal();
-    void loadSensorsDataDebug();
+    boolean controlStates[CONTROLS_COUNT];
+    long controlStartTime[CONTROLS_COUNT];
 
     void doControlDebug();
     void doControlReal();
 
+    void changeControl(uint8_t controlType, boolean on);
+
     void process();
 
-    // Debug mode
-
-
-
-    void printCommand(char const* key, char const* value);
+    //Temp
+    uint8_t i;
 public:
     void init();
-
-    void loadSensorsData() {
-        if (debugMode) {
-            loadSensorsDataDebug();
-        } else {
-            loadSensorsDataReal();
-        }
-    };
 
     void doControl() {
         if (debugMode) {
@@ -68,25 +66,32 @@ public:
     };
 
     //Sensors
+    void setDateTime(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t seconds) {
+        Greenhouse::year = year;
+        Greenhouse::month = month;
+        Greenhouse::day = day;
+        Greenhouse::hour = hour;
+        Greenhouse::minute = minute;
+        Greenhouse::seconds = seconds;
 
-
-    void setDateTime(DateTime const &dateTime) {
-        Greenhouse::dateTime = dateTime;
+        Greenhouse::timeSeconds = time2long(date2days(year, month, day), hour, minute, seconds);
     }
 
-    void setSunrise(DateTime const &sunrise) {
-        Greenhouse::sunrise = sunrise;
+    void setSunrise(uint8_t hour, uint8_t minute) {
+        Greenhouse::sunriseHour = hour;
+        Greenhouse::sunriseMinute = minute;
     }
 
-    void setSunset(DateTime const &sunset) {
-        Greenhouse::sunset = sunset;
+    void setSunset(uint8_t hour, uint8_t minute) {
+        Greenhouse::sunsetHour = hour;
+        Greenhouse::sunsetMinute = minute;
     }
 
-    void setHumidity(float humidity) {
+    void setHumidity(int humidity) {
         Greenhouse::humidity = humidity;
     }
 
-    void setTemperature(float temperature) {
+    void setTemperature(int temperature) {
         Greenhouse::temperature = temperature;
     }
 
@@ -94,24 +99,12 @@ public:
         Greenhouse::soilMoisture = soilMoisture;
     }
 
-//Control
+    //Control
     void setDebugMode(boolean debugMode) {
         Greenhouse::debugMode = debugMode;
     }
 
-    void setWaterPumpPin(uint8_t waterPumpPin) {
-        Greenhouse::waterPumpPin = waterPumpPin;
-    }
-
-    void setHumidifierPin(uint8_t humidifierPin) {
-        Greenhouse::humidifierPin = humidifierPin;
-    }
-
-    void setLampPin(uint8_t lampPin) {
-        Greenhouse::lampPin = lampPin;
-    }
-
-    void setHeaterPin(uint8_t heaterPin) {
-        Greenhouse::heaterPin = heaterPin;
+    void setControlPin(uint8_t controlType, uint8_t controlPin) {
+        controlPins[controlType] = controlPin;
     }
 };

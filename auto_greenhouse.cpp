@@ -1,19 +1,16 @@
-/*
-  Blink
-  Turns on an LED on for one second, then off for one second, repeatedly.
-  Example uses a static library to show off generate_arduino_library().
- 
-  This example code is in the public domain.
- */
-
 #include "Arduino.h"
-
-#include "libs/greenhouse/greenhouse.h"
+#include "Wire/Wire.h"
 
 #include "libs/LCDI2C/LiquidCrystal_I2C.h"
 #include "libs/i2ckeypad/i2ckeypad.h"
+#include "libs/DHT/DHT.h"
+#include "libs/RTC/RTClib.h"
+#include "libs/Sunrise/Sunrise.h"
+
+#include "libs/greenhouse/greenhouse.h"
 
 #define DEBUG_MODE                  true
+#define COMMAND_PARAMS_COUNT        13
 
 //Sensors
 #define DHT_PIN                     2
@@ -41,88 +38,19 @@ LiquidCrystal_I2C lcd(0x20, 20, 4);
 
 i2ckeypad kpd(0x27, 4, 4);
 
+DateTime dateTime;
+
 int tmp;
 int i;
 int paramIndex;
 boolean commandStarted;
+boolean commandFinished;
 char commandValue[32];
+int command[COMMAND_PARAMS_COUNT];
 
-void readSensors() {
-    DateTime dateTime = rtc.now();
-    greenhouse.setDateTime(dateTime);
-
-    mySunrise.Rise(dateTime.month(), dateTime.day());
-    greenhouse.setSunrise(DateTime(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0));
-
-    mySunrise.Set(dateTime.month(), dateTime.day());
-    greenhouse.setSunset(DateTime(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0));
-
-    greenhouse.setHumidity(dht.readHumidity());
-    greenhouse.setTemperature(dht.readTemperature());
-    greenhouse.setSoilMoisture(analogRead(SOIL_MOISTURE_SENSOR_PIN));
-}
-
-boolean readSensorsFromSerial() {
-    while (Serial.available()) {
-        tmp = Serial.read();
-
-        switch (tmp) {
-            case START:
-                commandStarted = true;
-
-                i = 0;
-                paramIndex = 0;
-                continue;
-
-            case SEP:
-                if (commandStarted) {
-                    commandValue[i] = '\0';
-
-                    //ToDo
-                    switch (paramIndex) {
-                        case 0:
-                            DateTime dateTime = DateTime(atoi(commandValue));
-                            greenhouse.setDateTime(dateTime);
-                            break;
-
-                        case 1:
-                            DateTime sunrise = DateTime(atoi(commandValue));
-                            greenhouse.setSunrise(sunrise);
-                            break;
-
-                        case 2:
-                            DateTime sunset = DateTime(atoi(commandValue));
-                            greenhouse.setSunset(sunset);
-                            break;
-                    }
-
-                    i = 0;
-                    paramIndex++;
-                }
-
-                continue;
-
-            case END:
-                if (commandStarted) {
-                    commandStarted = false;
-                    i = 0;
-                    paramIndex = 0;
-
-                    return true;
-                }
-                break;
-
-            default:
-                if (commandStarted) {
-                    commandValue[i++] = tmp;
-                }
-                continue;
-        }
-
-        return false;
-    }
-
-}
+void readSensors();
+void readSensorsFromSerial();
+boolean parseCommand();
 
 void setup() {
     Serial.begin(9600);
@@ -139,38 +67,37 @@ void setup() {
             // following line sets the RTC to the date & time this sketch was compiled
             //rtc.adjust(DateTime(__DATE__, __TIME__));
         }
+
+        lcd.init();                      // initialize the lcd
+        kpd.init();
+
+        // Print a message to the LCD.
+        lcd.backlight();
+        lcd.print("Hello, world!");
     }
 
     //Controls
-    greenhouse.setWaterPumpPin(WATER_PUMP_PIN);
-    greenhouse.setLampPin(LAMP_PIN);
-    greenhouse.setHumidifierPin(HUMIDIFIER_PIN);
-    greenhouse.setHeaterPin(HEATER_PIN);
+    greenhouse.setControlPin(WATER_PUMP, WATER_PUMP_PIN);
+    greenhouse.setControlPin(LAMP, LAMP_PIN);
+    greenhouse.setControlPin(HUMIDIFIER, HUMIDIFIER_PIN);
+    greenhouse.setControlPin(HEATER, HEATER_PIN);
 
     greenhouse.setDebugMode(DEBUG_MODE); //ToDo: get it from CMake config
 
     greenhouse.init();
-
-    lcd.init();                      // initialize the lcd
-
-    kpd.init();
-
-    // Print a message to the LCD.
-    lcd.backlight();
-    lcd.print("Hello, world!");
 }
 
 void loop() {
     if (DEBUG_MODE) {
-        if (!readSensorsFromSerial()) {
-            delay(50);
+        if (!parseCommand()) {
+            delay(10);
             return;
         }
+
+        readSensorsFromSerial();
     } else {
         readSensors();
     }
-
-    greenhouse.loadSensorsData();
 
     greenhouse.doControl();
 
@@ -178,4 +105,78 @@ void loop() {
     lcd.print(analogRead(SOIL_MOISTURE_SENSOR_PIN));
 
     delay(1000); //ToDo: review delay
+}
+
+
+void readSensors() {
+    dateTime = rtc.now();
+    greenhouse.setDateTime(dateTime.year(), dateTime.month(), dateTime.day(), dateTime.hour(), dateTime.minute(), dateTime.second());
+
+    mySunrise.Rise(dateTime.month(), dateTime.day());
+    greenhouse.setSunrise(mySunrise.Hour(), mySunrise.Minute());
+
+    mySunrise.Set(dateTime.month(), dateTime.day());
+    greenhouse.setSunset(mySunrise.Hour(), mySunrise.Minute());
+
+    greenhouse.setHumidity((int) dht.readHumidity());
+    greenhouse.setTemperature((int) dht.readTemperature());
+    greenhouse.setSoilMoisture(analogRead(SOIL_MOISTURE_SENSOR_PIN));
+}
+
+void readSensorsFromSerial() {
+    greenhouse.setDateTime(command[0], command[1], command[2], command[3], command[4], command[5]);
+    greenhouse.setSunrise(command[6], command[7]);
+    greenhouse.setSunset(command[8], command[9]);
+    greenhouse.setHumidity(command[10]);
+    greenhouse.setTemperature(command[11]);
+    greenhouse.setSoilMoisture(command[12]);
+}
+
+boolean parseCommand() {
+    while (Serial.available()) {
+        tmp = Serial.read();
+
+        switch (tmp) {
+            case START:
+                commandStarted = true;
+
+                i = 0;
+                paramIndex = 0;
+                continue;
+
+            case END:
+                if (commandStarted) {
+                    commandFinished = true;
+                }
+            case SEP:
+                if (commandStarted) {
+                    commandValue[i] = '\0';
+                    if (paramIndex >= 0 && paramIndex < COMMAND_PARAMS_COUNT) {
+                        command[paramIndex] = atoi(commandValue);
+                    }
+
+                    i = 0;
+                    paramIndex++;
+
+                    if (commandFinished) {
+                        commandFinished = false;
+                        commandStarted = false;
+                        i = 0;
+                        paramIndex = 0;
+
+                        return true;
+                    }
+                }
+
+                continue;
+
+            default:
+                if (commandStarted) {
+                    commandValue[i++] = (char) tmp;
+                }
+                continue;
+        }
+    }
+
+    return false;
 }
