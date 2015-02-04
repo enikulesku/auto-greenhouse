@@ -17,3 +17,9 @@ Temperature
 **Sensors**: temperature sensor
 
 **Controlled devices**: heater
+
+Humidity
+----
+**Sensors**: humidity sensor
+
+**Controlled devices**: humiditifier
