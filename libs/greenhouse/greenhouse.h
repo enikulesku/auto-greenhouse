@@ -5,9 +5,16 @@
 
 #include "../RTC/RTClib.h"
 
-#define START    '^'
-#define END      '$'
-#define SEP      ','
+#define START      '^'
+#define END        '$'
+#define SEP_COMMA  ','
+#define SEP_DOT    '.'
+#define SEP_COLON  ':'
+
+#define CONTROL    'C'
+#define RESET      'R'
+#define SENSORS    'S'
+#define LS         '\n'
 
 #define CONTROLS_COUNT  4
 #define WATER_PUMP      0
@@ -19,7 +26,7 @@ class Greenhouse {
 private:
     boolean debugMode;
     // Sensors state
-    uint8_t year;
+    uint16_t year;
     uint8_t month;
     uint8_t day;
     uint8_t hour;
@@ -45,28 +52,22 @@ private:
     boolean controlStates[CONTROLS_COUNT];
     long controlStartTime[CONTROLS_COUNT];
 
-    void doControlDebug();
-    void doControlReal();
-
     void changeControl(uint8_t controlType, boolean on);
 
     void process();
 
     //Temp
     uint8_t i;
+    int debugId;
 public:
     void init();
 
-    void doControl() {
-        if (debugMode) {
-            doControlDebug();
-        } else {
-            doControlReal();
-        }
-    };
+    void reset();
+
+    void doControl();
 
     //Sensors
-    void setDateTime(uint8_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t seconds) {
+    void setDateTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t seconds) {
         Greenhouse::year = year;
         Greenhouse::month = month;
         Greenhouse::day = day;
@@ -107,4 +108,12 @@ public:
     void setControlPin(uint8_t controlType, uint8_t controlPin) {
         controlPins[controlType] = controlPin;
     }
+
+    void setDebugId(int debugId) {
+        Greenhouse::debugId = debugId;
+    }
+
+    void printSensors();
+
+    void printControls();
 };

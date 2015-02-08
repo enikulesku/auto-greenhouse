@@ -84,7 +84,7 @@ protected:
     static long offset;
 };
 
-static uint16_t date2days(uint16_t y, uint8_t m, uint8_t d);
-static long time2long(uint16_t days, uint8_t h, uint8_t m, uint8_t s);
+uint16_t date2days(uint16_t y, uint8_t m, uint8_t d);
+long time2long(uint16_t days, uint8_t h, uint8_t m, uint8_t s);
 
 #endif // _RTCLIB_H_

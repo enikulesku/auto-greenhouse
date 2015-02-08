@@ -10,7 +10,7 @@
 #include "libs/greenhouse/greenhouse.h"
 
 #define DEBUG_MODE                  true
-#define COMMAND_PARAMS_COUNT        13
+#define COMMAND_PARAMS_COUNT        15
 
 //Sensors
 #define DHT_PIN                     2
@@ -94,17 +94,24 @@ void loop() {
             return;
         }
 
-        readSensorsFromSerial();
+        greenhouse.setDebugId(command[1]);
+
+        switch (command[0]) {
+            case SENSORS:// sensors info
+                readSensorsFromSerial();
+                break;
+
+            case RESET:// reset
+                greenhouse.reset();
+                break;
+        }
     } else {
         readSensors();
     }
 
     greenhouse.doControl();
 
-    lcd.clear();
-    lcd.print(analogRead(SOIL_MOISTURE_SENSOR_PIN));
-
-    delay(1000); //ToDo: review delay
+    //delay(100); //ToDo: review delay
 }
 
 
@@ -124,12 +131,12 @@ void readSensors() {
 }
 
 void readSensorsFromSerial() {
-    greenhouse.setDateTime(command[0], command[1], command[2], command[3], command[4], command[5]);
-    greenhouse.setSunrise(command[6], command[7]);
-    greenhouse.setSunset(command[8], command[9]);
-    greenhouse.setHumidity(command[10]);
-    greenhouse.setTemperature(command[11]);
-    greenhouse.setSoilMoisture(command[12]);
+    greenhouse.setDateTime(command[2], command[3], command[4], command[5], command[6], command[7]);
+    greenhouse.setSunrise(command[8], command[9]);
+    greenhouse.setSunset(command[10], command[11]);
+    greenhouse.setHumidity(command[12]);
+    greenhouse.setTemperature(command[13]);
+    greenhouse.setSoilMoisture(command[14]);
 }
 
 boolean parseCommand() {
@@ -142,16 +149,21 @@ boolean parseCommand() {
 
                 i = 0;
                 paramIndex = 0;
-                continue;
+                break;
 
             case END:
                 if (commandStarted) {
                     commandFinished = true;
                 }
-            case SEP:
+            case SEP_COMMA:
+            case SEP_DOT:
+            case SEP_COLON:
                 if (commandStarted) {
                     commandValue[i] = '\0';
-                    if (paramIndex >= 0 && paramIndex < COMMAND_PARAMS_COUNT) {
+
+                    if (paramIndex == 0) {
+                        command[0] = commandValue[0];
+                    } else if (paramIndex > 0 && paramIndex < COMMAND_PARAMS_COUNT) {
                         command[paramIndex] = atoi(commandValue);
                     }
 
@@ -168,13 +180,13 @@ boolean parseCommand() {
                     }
                 }
 
-                continue;
+                break;
 
             default:
                 if (commandStarted) {
                     commandValue[i++] = (char) tmp;
                 }
-                continue;
+                break;
         }
     }
 

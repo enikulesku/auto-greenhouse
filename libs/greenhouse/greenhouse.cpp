@@ -11,6 +11,25 @@ void Greenhouse::init() {
     }
 }
 
+
+void Greenhouse::reset() {
+    for (i = 0; i < CONTROLS_COUNT; i++) {
+        changeControl(controlPins[i], false);
+        controlStartTime[i] = 0;
+    }
+
+    if (!debugMode) {
+        return;
+    }
+
+    Serial.print(START);
+    Serial.print(RESET);
+    Serial.print(SEP_COMMA);
+    Serial.print(debugId);
+    Serial.print(END);
+    Serial.print(LS);
+}
+
 void Greenhouse::changeControl(uint8_t controlType, boolean on) {
     //ToDo: review
     if (controlStates[controlType] == on) {
@@ -30,26 +49,75 @@ void Greenhouse::changeControl(uint8_t controlType, boolean on) {
     digitalWrite(controlPins[controlType], on ? HIGH : LOW);
 }
 
-void Greenhouse::doControlDebug() {
+void Greenhouse::doControl() {
+    if (debugMode) {
+        printSensors();
+    }
+
     process();
 
+    if (debugMode) {
+        printControls();
+    }
+}
+
+void Greenhouse::process() {
+    //ToDo: put logic here
+}
+
+void Greenhouse::printSensors() {
     Serial.print(START);
+    Serial.print(SENSORS);
+    Serial.print(SEP_COMMA);
+
+    Serial.print(debugId);
+    Serial.print(SEP_COMMA);
+    Serial.print(year);
+    Serial.print(SEP_DOT);
+    Serial.print(month);
+    Serial.print(SEP_DOT);
+    Serial.print(day);
+    Serial.print(SEP_COMMA);
+    Serial.print(hour);
+    Serial.print(SEP_COLON);
+    Serial.print(minute);
+    Serial.print(SEP_COLON);
+    Serial.print(seconds);
+    Serial.print(SEP_COMMA);
+    Serial.print(sunriseHour);
+    Serial.print(SEP_COLON);
+    Serial.print(sunriseMinute);
+    Serial.print(SEP_COMMA);
+    Serial.print(sunsetHour);
+    Serial.print(SEP_COLON);
+    Serial.print(sunsetMinute);
+    Serial.print(SEP_COMMA);
+    Serial.print(humidity);
+    Serial.print(SEP_COMMA);
+    Serial.print(temperature);
+    Serial.print(SEP_COMMA);
+    Serial.print(soilMoisture);
+
+    Serial.print(END);
+    Serial.print(LS);
+
+    Serial.flush();
+};
+
+void Greenhouse::printControls() {
+    Serial.print(START);
+    Serial.print(CONTROL);
+    Serial.print(SEP_COMMA);
+    Serial.print(debugId);
 
     for (i = 0; i < CONTROLS_COUNT; i++) {
-        if (i != 0) {
-            Serial.print(SEP);
-        }
+        Serial.print(SEP_COMMA);
 
         Serial.print(controlStates[i]);
     }
 
-    Serial.println(END);
-};
+    Serial.print(END);
+    Serial.print(LS);
 
-void Greenhouse::doControlReal() {
-    process();
-};
-
-void Greenhouse::process() {
-    //ToDo: put logic here
+    Serial.flush();
 }
