@@ -10,7 +10,7 @@
 #include "libs/greenhouse/greenhouse.h"
 
 #define DEBUG_MODE                  true
-#define COMMAND_PARAMS_COUNT        15
+#define COMMAND_PARAMS_COUNT        6
 
 //Sensors
 #define DHT_PIN                     2
@@ -46,7 +46,7 @@ int paramIndex;
 boolean commandStarted;
 boolean commandFinished;
 char commandValue[32];
-int command[COMMAND_PARAMS_COUNT];
+long command[COMMAND_PARAMS_COUNT];
 
 void readSensors();
 void readSensorsFromSerial();
@@ -55,12 +55,13 @@ boolean parseCommand();
 void setup() {
     Serial.begin(9600);
 
+    mySunrise.Civil(); //Actual, Civil, Nautical, Astronomical
+
     if (!DEBUG_MODE) {
         Wire.begin();
 
         rtc.begin();
         dht.begin();
-        mySunrise.Civil(); //Actual, Civil, Nautical, Astronomical
 
         if (!rtc.isrunning()) {
             Serial.println("RTC is NOT running!");
@@ -117,13 +118,13 @@ void loop() {
 
 void readSensors() {
     dateTime = rtc.now();
-    greenhouse.setDateTime(dateTime.year(), dateTime.month(), dateTime.day(), dateTime.hour(), dateTime.minute(), dateTime.second());
+    greenhouse.setDateTime(time2long(date2days(dateTime.year(), dateTime.month(), dateTime.day()), dateTime.hour(), dateTime.minute(), dateTime.second()));
 
     mySunrise.Rise(dateTime.month(), dateTime.day());
-    greenhouse.setSunrise(mySunrise.Hour(), mySunrise.Minute());
+    greenhouse.setSunrise(time2long(date2days(dateTime.year(), dateTime.month(), dateTime.day()), mySunrise.Hour(), mySunrise.Minute(), 0));
 
     mySunrise.Set(dateTime.month(), dateTime.day());
-    greenhouse.setSunset(mySunrise.Hour(), mySunrise.Minute());
+    greenhouse.setSunset(time2long(date2days(dateTime.year(), dateTime.month(), dateTime.day()), mySunrise.Hour(), mySunrise.Minute(), 0));
 
     greenhouse.setHumidity((int) dht.readHumidity());
     greenhouse.setTemperature((int) dht.readTemperature());
@@ -131,12 +132,19 @@ void readSensors() {
 }
 
 void readSensorsFromSerial() {
-    greenhouse.setDateTime(command[2], command[3], command[4], command[5], command[6], command[7]);
-    greenhouse.setSunrise(command[8], command[9]);
-    greenhouse.setSunset(command[10], command[11]);
-    greenhouse.setHumidity(command[12]);
-    greenhouse.setTemperature(command[13]);
-    greenhouse.setSoilMoisture(command[14]);
+    dateTime = DateTime(command[2]);
+
+    greenhouse.setDateTime(command[2]);
+
+    mySunrise.Rise(dateTime.month(), dateTime.day());
+    greenhouse.setSunrise(time2long(date2days(dateTime.year(), dateTime.month(), dateTime.day()), mySunrise.Hour(), mySunrise.Minute(), 0));
+
+    mySunrise.Set(dateTime.month(), dateTime.day());
+    greenhouse.setSunset(time2long(date2days(dateTime.year(), dateTime.month(), dateTime.day()), mySunrise.Hour(), mySunrise.Minute(), 0));
+
+    greenhouse.setHumidity(command[3]);
+    greenhouse.setTemperature(command[4]);
+    greenhouse.setSoilMoisture(command[5]);
 }
 
 boolean parseCommand() {
@@ -156,15 +164,13 @@ boolean parseCommand() {
                     commandFinished = true;
                 }
             case SEP_COMMA:
-            case SEP_DOT:
-            case SEP_COLON:
                 if (commandStarted) {
                     commandValue[i] = '\0';
 
                     if (paramIndex == 0) {
                         command[0] = commandValue[0];
                     } else if (paramIndex > 0 && paramIndex < COMMAND_PARAMS_COUNT) {
-                        command[paramIndex] = atoi(commandValue);
+                        command[paramIndex] = atol(commandValue);
                     }
 
                     i = 0;

@@ -72,25 +72,11 @@ void Greenhouse::printSensors() {
 
     Serial.print(debugId);
     Serial.print(SEP_COMMA);
-    Serial.print(year);
-    Serial.print(SEP_DOT);
-    Serial.print(month);
-    Serial.print(SEP_DOT);
-    Serial.print(day);
+    Serial.print(timeSeconds);
     Serial.print(SEP_COMMA);
-    Serial.print(hour);
-    Serial.print(SEP_COLON);
-    Serial.print(minute);
-    Serial.print(SEP_COLON);
-    Serial.print(seconds);
+    Serial.print(sunriseSeconds);
     Serial.print(SEP_COMMA);
-    Serial.print(sunriseHour);
-    Serial.print(SEP_COLON);
-    Serial.print(sunriseMinute);
-    Serial.print(SEP_COMMA);
-    Serial.print(sunsetHour);
-    Serial.print(SEP_COLON);
-    Serial.print(sunsetMinute);
+    Serial.print(sunsetSeconds);
     Serial.print(SEP_COMMA);
     Serial.print(humidity);
     Serial.print(SEP_COMMA);

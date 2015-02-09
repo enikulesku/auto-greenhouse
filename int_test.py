@@ -19,11 +19,11 @@ class AutoGreenhouseTest(unittest.TestCase):
         self.ser.close()
 
     def setUp(self):
-        //ToDo: send reset
+        #ToDo: send reset
         print "setUp"
 
     def tearDown(self):
-        //ToDo: send reset
+        #ToDo: send reset
         print "tearDown"
 
     def test_stub2(self):
@@ -43,14 +43,14 @@ class AutoGreenhouseTest(unittest.TestCase):
 
         i = 2
         while(True):
-            ser.write("^S,{},2015.2.8,11:12:13,6:1,17:2,35,22,800$".format(i))
+            ser.write("^S,{},1423493380,35,22,800$".format(i))
 
             line = ser.readline()
             print (line)
             line = ser.readline()
             print (line)
             i += 1
-            //ToDo: use inWaiting
+            #ToDo: use inWaiting
             #if ser.inWaiting() > 0:
             #    i += 1
             #    msg = ser.read(ser.inWaiting()) # read everything in the input buffer
@@ -64,6 +64,18 @@ class AutoGreenhouseTest(unittest.TestCase):
         print "test"
 
         self.assertTrue(True)
+
+
+class Sensors:
+    def __init__(self, debug_id, date_time, sunrise, sunset, humidity, temperature, soil_moisture):
+        self.debug_id = debug_id
+        self.date_time = date_time
+        self.sunrise = sunrise
+        self.sunset = sunset
+        self.humidity = humidity
+        self.temperature = temperature
+        self.soil_moisture = soil_moisture
+
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:

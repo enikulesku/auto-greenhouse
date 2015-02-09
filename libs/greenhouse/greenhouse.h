@@ -8,8 +8,6 @@
 #define START      '^'
 #define END        '$'
 #define SEP_COMMA  ','
-#define SEP_DOT    '.'
-#define SEP_COLON  ':'
 
 #define CONTROL    'C'
 #define RESET      'R'
@@ -26,20 +24,11 @@ class Greenhouse {
 private:
     boolean debugMode;
     // Sensors state
-    uint16_t year;
-    uint8_t month;
-    uint8_t day;
-    uint8_t hour;
-    uint8_t minute;
-    uint8_t seconds;
-
     long timeSeconds;
 
-    uint8_t sunriseHour;
-    uint8_t sunriseMinute;
+    long sunriseSeconds;
 
-    uint8_t sunsetHour;
-    uint8_t sunsetMinute;
+    long sunsetSeconds;
 
     int humidity;
     int temperature;
@@ -67,25 +56,16 @@ public:
     void doControl();
 
     //Sensors
-    void setDateTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t seconds) {
-        Greenhouse::year = year;
-        Greenhouse::month = month;
-        Greenhouse::day = day;
-        Greenhouse::hour = hour;
-        Greenhouse::minute = minute;
-        Greenhouse::seconds = seconds;
-
-        Greenhouse::timeSeconds = time2long(date2days(year, month, day), hour, minute, seconds);
+    void setDateTime(long timeSeconds) {
+        Greenhouse::timeSeconds = timeSeconds;
     }
 
-    void setSunrise(uint8_t hour, uint8_t minute) {
-        Greenhouse::sunriseHour = hour;
-        Greenhouse::sunriseMinute = minute;
+    void setSunrise(long sunriseSeconds) {
+        Greenhouse::sunriseSeconds = sunriseSeconds;
     }
 
-    void setSunset(uint8_t hour, uint8_t minute) {
-        Greenhouse::sunsetHour = hour;
-        Greenhouse::sunsetMinute = minute;
+    void setSunset(long sunsetSeconds) {
+        Greenhouse::sunsetSeconds = sunsetSeconds;
     }
 
     void setHumidity(int humidity) {
