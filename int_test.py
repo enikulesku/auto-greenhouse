@@ -6,7 +6,7 @@ import unittest
 import sys
 import time
 from datetime import datetime
-from astral import Astral,City
+from astral import *
 import timeout_decorator
 
 class AutoGreenhouseTest(unittest.TestCase):
@@ -15,7 +15,7 @@ class AutoGreenhouseTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ser = serial.Serial(cls.device, cls.baudrate, timeout=1)
+        cls.ser = serial.Serial(cls.device, cls.baudrate, timeout=None)
         cls.messages = MessagesManager(cls.ser)
 
     @classmethod
@@ -34,9 +34,16 @@ class AutoGreenhouseTest(unittest.TestCase):
         print "tearDown"
 
     def test_stub(self):
-        city = City(('Odessa', 'Ukraine', 47, 31, 'Etc/GMT+2'))
-        city.sun(date=datetime.now(), local=True)
+        a = Astral()
+        location = a['Kiev'] # ToDo: make it for Odessa
+        sun = location.sun(local=True, date=datetime.now())
         #ToDo: put test here
+        print 'test'
+        sens = Sensors(1, datetime.now(), datetime.now(), datetime.now(), 2, 3, 4)
+        self.messages.publish_message(sens)
+
+        print self.messages.get_sensors(1)
+        print self.messages.get_controls(1)
 
         self.assertTrue(True)
 
@@ -51,7 +58,8 @@ class MessagesManager:
         self.message = ''
 
     def publish_message(self, message):
-        self.ser.write(message)
+        self.ser.write(message.__str__())
+        self.ser.flush()
 
     def get_reset(self, debug_id):
         return self.pop_element(self.resets, debug_id)
@@ -62,7 +70,7 @@ class MessagesManager:
     def get_sensors(self, debug_id):
         return self.pop_element(self.sensors, debug_id)
 
-    @timeout_decorator.timeout(5)
+    @timeout_decorator.timeout(20)
     def pop_element(self, collection, debug_id):
         while True:
             if len(collection) == 0:
@@ -79,12 +87,13 @@ class MessagesManager:
                     return obj
 
     def _process_(self):
-        if ser.inWaiting() == 0:
-            return
-
-        self.message = ser.read(ser.inWaiting())
+        self.message += self.ser.readline()
 
         messages = list(mess.translate(None, '\n\r^ ') for mess in self.message.split('$'))
+
+        self.message = ''
+
+        print (messages)
 
         for idx, mess in enumerate(messages):
             arguments = mess.split(",")
