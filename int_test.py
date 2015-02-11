@@ -6,7 +6,8 @@ import unittest
 import sys
 import time
 from datetime import datetime
-#import timeout_decorator
+from astral import Astral,City
+import timeout_decorator
 
 class AutoGreenhouseTest(unittest.TestCase):
     baudrate = 0
@@ -33,6 +34,8 @@ class AutoGreenhouseTest(unittest.TestCase):
         print "tearDown"
 
     def test_stub(self):
+        city = City(('Odessa', 'Ukraine', 47, 31, 'Etc/GMT+2'))
+        city.sun(date=datetime.now(), local=True)
         #ToDo: put test here
 
         self.assertTrue(True)
@@ -59,7 +62,7 @@ class MessagesManager:
     def get_sensors(self, debug_id):
         return self.pop_element(self.sensors, debug_id)
 
-    #@timeout_decorator.timeout(5)
+    @timeout_decorator.timeout(5)
     def pop_element(self, collection, debug_id):
         while True:
             if len(collection) == 0:
