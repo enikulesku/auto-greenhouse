@@ -15,7 +15,7 @@ class AutoGreenhouseTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ser = serial.Serial(cls.device, cls.baudrate, timeout=None)
+        cls.ser = serial.Serial(cls.device, cls.baudrate, timeout=3)
         cls.messages = MessagesManager(cls.ser)
 
     @classmethod
@@ -58,6 +58,7 @@ class MessagesManager:
         self.message = ''
 
     def publish_message(self, message):
+        self._process_()
         self.ser.write(message.__str__())
         self.ser.flush()
 
@@ -151,7 +152,7 @@ class Sensors:
         self.soil_moisture = int(soil_moisture)
 
     def __str__(self):
-        return '^S,{},{},{},{},{}$'.format(self.debug_id, self.date_time.total_seconds(), self.humidity,
+        return '^S,{},{},{},{},{}$'.format(self.debug_id, self.date_time.strftime('%s'), self.humidity,
                                            self.temperature, self.soil_moisture)
 
     @staticmethod
@@ -190,17 +191,16 @@ class Controls:
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        parser = argparse.ArgumentParser(description='Auto-Greenhouse Integration Test')
-        parser.add_argument('-b', '--baudrate', type=int, default=9600)
-        parser.add_argument('-D', '--device', default='/dev/ttyACM0')
+    parser = argparse.ArgumentParser(description='Auto-Greenhouse Integration Test')
+    parser.add_argument('-b', '--baudrate', type=int, default=9600)
+    parser.add_argument('-D', '--device', default='/dev/ttyACM0')
 
-        args = parser.parse_args()
+    args = parser.parse_args()
 
-        AutoGreenhouseTest.baudrate = args.baudrate
-        AutoGreenhouseTest.device = args.device
+    AutoGreenhouseTest.baudrate = args.baudrate
+    AutoGreenhouseTest.device = args.device
 
-        del sys.argv[:]
-        sys.argv.append("AutoGreenhouseTest")
+    del sys.argv[:]
+    sys.argv.append("AutoGreenhouseTest")
 
     unittest.main()

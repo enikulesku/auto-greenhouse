@@ -28,6 +28,7 @@ void Greenhouse::reset() {
     Serial.print(debugId);
     Serial.print(END);
     Serial.print(LS);
+    Serial.flush();
 }
 
 void Greenhouse::changeControl(uint8_t controlType, boolean on) {
