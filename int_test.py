@@ -5,7 +5,7 @@ import argparse
 import unittest
 import sys
 import time
-from datetime import datetime
+from datetime import *
 from astral import *
 import timeout_decorator
 
@@ -25,26 +25,41 @@ class AutoGreenhouseTest(unittest.TestCase):
     def setUp(self):
         self.debug_id = 0
 
+        debug_id = self.next_debug_id()
+
         self.messages = AutoGreenhouseTest.messages
-        self.messages.publish_message(Reset(self.debug_id))
-        self.messages.get_reset(self.debug_id)
+        self.messages.publish_message(Reset(debug_id))
+        self.messages.get_reset(debug_id)
+
+    def next_debug_id(self):
+        self.debug_id += 1
+        return self.debug_id
 
     def tearDown(self):
-        #ToDo: send reset
+        # ToDo: send reset
         print "tearDown"
 
+    def test_datetime_sunrise_sunset(self):
+        location = Location(('Odessa', 'Ukraine', 46.5, 30.77, 'UTC'))
+
+        for single_date in daterange(datetime(2015, 1, 1), datetime(2016, 1, 1)):
+            debug_id = self.next_debug_id()
+
+            sun = location.sun(local=False, date=single_date)
+
+            expected = Sensors(debug_id, single_date, 0, 0, 0, sun['sunrise'], sun['sunset'])
+            self.messages.publish_message(expected)
+
+            actual = self.messages.get_sensors(debug_id)
+
+            self.assertAlmostEqual(msg="dateTime", first=expected.date_time, second=actual.date_time, delta=timedelta(minutes=1))
+
+            self.assertAlmostEqual(msg="sunrise", first=expected.sunrise, second=actual.sunrise, delta=timedelta(minutes=20))
+            self.assertAlmostEqual(msg="sunset", first=expected.sunset, second=actual.sunset, delta=timedelta(minutes=20))
+
+            self.messages.get_controls(debug_id) #just to flush
+
     def test_stub(self):
-        a = Astral()
-        location = a['Kiev'] # ToDo: make it for Odessa
-        sun = location.sun(local=True, date=datetime.now())
-        #ToDo: put test here
-        print 'test'
-        sens = Sensors(1, datetime.now(), datetime.now(), datetime.now(), 2, 3, 4)
-        self.messages.publish_message(sens)
-
-        print self.messages.get_sensors(1)
-        print self.messages.get_controls(1)
-
         self.assertTrue(True)
 
 
@@ -142,25 +157,19 @@ class Reset:
 
 
 class Sensors:
-    def __init__(self, debug_id, date_time, sunrise, sunset, humidity, temperature, soil_moisture):
+    def __init__(self, debug_id, date_time, humidity, temperature, soil_moisture, sunrise, sunset):
         self.debug_id = int(debug_id)
-        self.date_time = Sensors.int_to_date(date_time)
-        self.sunrise = Sensors.int_to_date(sunrise)
-        self.sunset = Sensors.int_to_date(sunset)
+        self.date_time = int_to_date(date_time)
         self.humidity = int(humidity)
         self.temperature = int(temperature)
         self.soil_moisture = int(soil_moisture)
+        self.sunrise = int_to_date(sunrise)
+        self.sunset = int_to_date(sunset)
 
     def __str__(self):
-        return '^S,{},{},{},{},{}$'.format(self.debug_id, self.date_time.strftime('%s'), self.humidity,
-                                           self.temperature, self.soil_moisture)
-
-    @staticmethod
-    def int_to_date(value):
-        if isinstance(value, datetime):
-            return value
-
-        return datetime.fromtimestamp(int(value))
+        return '^S%s$' % ",".join((self.debug_id, date_to_seconds(self.date_time),
+                                   self.humidity, self.temperature, self.soil_moisture,
+                                   date_to_seconds(self.sunrise), date_to_seconds(self.sunset)))
 
     @staticmethod
     def parse(raw_args):
@@ -189,6 +198,19 @@ class Controls:
 
         return Controls(*raw_args[1:])
 
+
+def daterange(start_date, end_date):
+    for n in range(int((end_date - start_date).days)):
+        yield start_date + timedelta(n)
+
+def date_to_seconds(value):
+    return (value - datetime.datetime(1970, 1, 1)).total_seconds()
+
+def int_to_date(value):
+    if isinstance(value, datetime):
+        return value
+
+    return datetime.fromtimestamp(int(value))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Auto-Greenhouse Integration Test')

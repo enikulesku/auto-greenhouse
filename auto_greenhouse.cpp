@@ -15,9 +15,9 @@
 //Sensors
 #define DHT_PIN                     2
 #define SOIL_MOISTURE_SENSOR_PIN    0 //A0
-#define LATITUDE                    47 //{
-#define LONGITUDE                   31 //{ Odesa, Ukraine, Europe - Latitude/Longitude and Timezone 	46.5/30.77, +2;
-#define TIMEZONE                    +2 //{
+#define LATITUDE                    46.5 //{
+#define LONGITUDE                   30.77 //{ Odesa, Ukraine, Europe - Latitude/Longitude and Timezone 	46.5/30.77, 0;
+#define TIMEZONE                    0 //{ using UTC to avoid problems with timezones
 
 //Controls
 #define WATER_PUMP_PIN              4
@@ -118,13 +118,13 @@ void loop() {
 
 void readSensors() {
     dateTime = rtc.now();
-    greenhouse.setDateTime(time2long(date2days(dateTime.year(), dateTime.month(), dateTime.day()), dateTime.hour(), dateTime.minute(), dateTime.second()));
+    greenhouse.setDateTime(date2seconds(dateTime.year(), dateTime.month(), dateTime.day(), dateTime.hour(), dateTime.minute(), dateTime.second()));
 
     mySunrise.Rise(dateTime.month(), dateTime.day());
-    greenhouse.setSunrise(time2long(date2days(dateTime.year(), dateTime.month(), dateTime.day()), mySunrise.Hour(), mySunrise.Minute(), 0));
+    greenhouse.setSunrise(date2seconds(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0));
 
     mySunrise.Set(dateTime.month(), dateTime.day());
-    greenhouse.setSunset(time2long(date2days(dateTime.year(), dateTime.month(), dateTime.day()), mySunrise.Hour(), mySunrise.Minute(), 0));
+    greenhouse.setSunset(date2seconds(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0));
 
     greenhouse.setHumidity((int) dht.readHumidity());
     greenhouse.setTemperature((int) dht.readTemperature());
@@ -137,10 +137,10 @@ void readSensorsFromSerial() {
     greenhouse.setDateTime(command[2]);
 
     mySunrise.Rise(dateTime.month(), dateTime.day());
-    greenhouse.setSunrise(time2long(date2days(dateTime.year(), dateTime.month(), dateTime.day()), mySunrise.Hour(), mySunrise.Minute(), 0));
+    greenhouse.setSunrise(date2seconds(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0));
 
     mySunrise.Set(dateTime.month(), dateTime.day());
-    greenhouse.setSunset(time2long(date2days(dateTime.year(), dateTime.month(), dateTime.day()), mySunrise.Hour(), mySunrise.Minute(), 0));
+    greenhouse.setSunset(date2seconds(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0));
 
     greenhouse.setHumidity(command[3]);
     greenhouse.setTemperature(command[4]);
