@@ -112,8 +112,6 @@ void Greenhouse::printControls() {
 }
 
 long date2seconds(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second) {
-    year -= 1970;
-
     uint32_t days = day;
 
     for (uint8_t i = 1; i < month; ++i) {
@@ -124,7 +122,7 @@ long date2seconds(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8
         ++days;
     }
 
-    days += 365 * year + (year + 3) / 4 - 1;
+    days += 365 * (year - 1970) + (year - 1972 + 3) / 4 - 1;
 
     return ((days * 24L + hour) * 60 + minute) * 60 + second;
 }

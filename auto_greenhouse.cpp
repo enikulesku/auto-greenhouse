@@ -53,9 +53,9 @@ void readSensorsFromSerial();
 boolean parseCommand();
 
 void setup() {
-    Serial.begin(9600);
+    Serial.begin(115200);
 
-    mySunrise.Civil(); //Actual, Civil, Nautical, Astronomical
+    mySunrise.Actual(); //Actual, Civil, Nautical, Astronomical
 
     if (!DEBUG_MODE) {
         Wire.begin();
@@ -112,7 +112,7 @@ void loop() {
 
     greenhouse.doControl();
 
-    //delay(100); //ToDo: review delay
+    delay(100); //ToDo: review delay
 }
 
 

@@ -5,9 +5,10 @@ import argparse
 import unittest
 import sys
 import time
-from datetime import *
+from datetime import datetime, timedelta
 from astral import *
 import timeout_decorator
+import pytz
 
 class AutoGreenhouseTest(unittest.TestCase):
     baudrate = 0
@@ -15,7 +16,7 @@ class AutoGreenhouseTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ser = serial.Serial(cls.device, cls.baudrate, timeout=3)
+        cls.ser = serial.Serial(cls.device, cls.baudrate, timeout=0.05)
         cls.messages = MessagesManager(cls.ser)
 
     @classmethod
@@ -35,10 +36,6 @@ class AutoGreenhouseTest(unittest.TestCase):
         self.debug_id += 1
         return self.debug_id
 
-    def tearDown(self):
-        # ToDo: send reset
-        print "tearDown"
-
     def test_datetime_sunrise_sunset(self):
         location = Location(('Odessa', 'Ukraine', 46.5, 30.77, 'UTC'))
 
@@ -47,7 +44,7 @@ class AutoGreenhouseTest(unittest.TestCase):
 
             sun = location.sun(local=False, date=single_date)
 
-            expected = Sensors(debug_id, single_date, 0, 0, 0, sun['sunrise'], sun['sunset'])
+            expected = Sensors(debug_id, single_date, 0, 0, 0, sun['sunrise'].replace(tzinfo=None), sun['sunset'].replace(tzinfo=None))
             self.messages.publish_message(expected)
 
             actual = self.messages.get_sensors(debug_id)
@@ -93,7 +90,7 @@ class MessagesManager:
                 self._process_()
 
             if len(collection) == 0:
-                time.sleep(0.1)
+                time.sleep(0.05)
                 continue
 
             while len(collection) != 0:
@@ -109,7 +106,7 @@ class MessagesManager:
 
         self.message = ''
 
-        print (messages)
+        #print (messages)
 
         for idx, mess in enumerate(messages):
             arguments = mess.split(",")
@@ -167,9 +164,9 @@ class Sensors:
         self.sunset = int_to_date(sunset)
 
     def __str__(self):
-        return '^S%s$' % ",".join((self.debug_id, date_to_seconds(self.date_time),
+        return '^S,{},{},{},{},{},{},{}$'.format(self.debug_id, date_to_seconds(self.date_time),
                                    self.humidity, self.temperature, self.soil_moisture,
-                                   date_to_seconds(self.sunrise), date_to_seconds(self.sunset)))
+                                   date_to_seconds(self.sunrise), date_to_seconds(self.sunset))
 
     @staticmethod
     def parse(raw_args):
@@ -200,21 +197,21 @@ class Controls:
 
 
 def daterange(start_date, end_date):
-    for n in range(int((end_date - start_date).days)):
-        yield start_date + timedelta(n)
+    for n in range(int((end_date - start_date).days) / 30):
+        yield start_date + timedelta(n * 30)
 
 def date_to_seconds(value):
-    return (value - datetime.datetime(1970, 1, 1)).total_seconds()
+    return (value.replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds()
 
 def int_to_date(value):
     if isinstance(value, datetime):
         return value
 
-    return datetime.fromtimestamp(int(value))
+    return datetime.fromtimestamp(int(value), tz=pytz.utc).replace(tzinfo=None)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Auto-Greenhouse Integration Test')
-    parser.add_argument('-b', '--baudrate', type=int, default=9600)
+    parser.add_argument('-b', '--baudrate', type=int, default=115200)
     parser.add_argument('-D', '--device', default='/dev/ttyACM0')
 
     args = parser.parse_args()
