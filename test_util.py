@@ -97,7 +97,7 @@ class Reset:
 
 
 class Sensors:
-    def __init__(self, debug_id, date_time, humidity, temperature, soil_moisture, sunrise, sunset):
+    def __init__(self, debug_id, date_time=None, humidity=0, temperature=0, soil_moisture=0, sunrise=None, sunset=None):
         self.debug_id = int(debug_id)
         self.date_time = int_to_date(date_time)
         self.humidity = int(humidity)
@@ -120,7 +120,7 @@ class Sensors:
 
 
 class Controls:
-    def __init__(self, debug_id, water_pump, lamp, humidifier, heater):
+    def __init__(self, debug_id, water_pump=False, lamp=False, humidifier=False, heater=False):
         self.debug_id = int(debug_id)
         self.water_pump = bool(int(water_pump))
         self.lamp = bool(int(lamp))
@@ -144,6 +144,9 @@ def daterange(start_date, end_date):
         yield start_date + timedelta(n * 30)
 
 def date_to_seconds(value):
+    if value is None:
+        return 0
+
     return (value.replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds()
 
 def int_to_date(value):
