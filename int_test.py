@@ -27,8 +27,7 @@ class AutoGreenhouseTest(unittest.TestCase):
         debug_id = self.next_debug_id()
 
         self.messages = AutoGreenhouseTest.messages
-        self.messages.publish_message(Reset(debug_id))
-        self.messages.get_reset(debug_id)
+        self.messages.echo_message(Reset(debug_id))
 
     def next_debug_id(self):
         self.debug_id += 1
@@ -43,16 +42,12 @@ class AutoGreenhouseTest(unittest.TestCase):
             sun = location.sun(local=False, date=single_date)
 
             expected = Sensors(debug_id, single_date, 0, 0, 0, sun['sunrise'].replace(tzinfo=None), sun['sunset'].replace(tzinfo=None))
-            self.messages.publish_message(expected)
-
-            actual = self.messages.get_sensors(debug_id)
+            actual, controls = self.messages.echo_message(expected)
 
             self.assertAlmostEqual(msg="dateTime", first=expected.date_time, second=actual.date_time, delta=timedelta(minutes=1))
 
             self.assertAlmostEqual(msg="sunrise", first=expected.sunrise, second=actual.sunrise, delta=timedelta(minutes=20))
             self.assertAlmostEqual(msg="sunset", first=expected.sunset, second=actual.sunset, delta=timedelta(minutes=20))
-
-            self.messages.get_controls(debug_id) #just to flush
 
     def test_stub(self):
         self.assertTrue(True)

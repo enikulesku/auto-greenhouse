@@ -17,14 +17,14 @@ class MessagesManager:
         self.ser.write(message.__str__())
         self.ser.flush()
 
-    def get_reset(self, debug_id):
-        return self.pop_element(self.resets, debug_id)
+    def echo_message(self, obj):
+        self.publish_message(obj)
 
-    def get_controls(self, debug_id):
-        return self.pop_element(self.controls, debug_id)
-
-    def get_sensors(self, debug_id):
-        return self.pop_element(self.sensors, debug_id)
+        if isinstance(obj, Reset):
+            return self.pop_element(self.resets, obj.debug_id)
+        elif isinstance(obj, Sensors):
+            return (self.pop_element(self.sensors, obj.debug_id),
+                    self.pop_element(self.controls, obj.debug_id))
 
     @timeout_decorator.timeout(20)
     def pop_element(self, collection, debug_id):
