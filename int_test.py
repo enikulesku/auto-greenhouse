@@ -14,7 +14,7 @@ class AutoGreenhouseTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ser = serial.Serial(cls.device, cls.baudrate, timeout=0.05)
+        cls.ser = serial.Serial(cls.device, cls.baudrate, timeout=1)
         cls.messages = MessagesManager(cls.ser)
 
     @classmethod
@@ -24,10 +24,8 @@ class AutoGreenhouseTest(unittest.TestCase):
     def setUp(self):
         self.debug_id = 0
 
-        debug_id = self.next_debug_id()
-
         self.messages = AutoGreenhouseTest.messages
-        self.messages.echo_message(Reset(debug_id))
+        self.messages.echo_message(Reset(self.next_debug_id()))
 
     def next_debug_id(self):
         self.debug_id += 1
@@ -50,13 +48,13 @@ class AutoGreenhouseTest(unittest.TestCase):
             self.assertAlmostEqual(msg="sunset", first=expected.sunset, second=actual.sunset, delta=timedelta(minutes=20))
 
     def test_water_pump_by_value(self):
-        actual, controls = self.messages.echo_message(Sensors(date_time=datetime(2015, 1, 1, second=0), soil_moisture=10))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=0), soil_moisture=10))
         self.assertFalse(controls.water_pump)
 
-        actual, controls = self.messages.echo_message(Sensors(date_time=datetime(2015, 1, 1, second=1), soil_moisture=1000))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=1), soil_moisture=1000))
         self.assertTrue(controls.water_pump)
 
-        actual, controls = self.messages.echo_message(Sensors(date_time=datetime(2015, 1, 1, second=2), soil_moisture=10))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=2), soil_moisture=10))
         self.assertFalse(controls.water_pump)
 
 
@@ -65,13 +63,13 @@ class AutoGreenhouseTest(unittest.TestCase):
         max_work_time = timedelta(minutes=2)
         allowed_delta = timedelta(seconds=10)
 
-        actual, controls = self.messages.echo_message(Sensors(date_time=initial_date, soil_moisture=1000))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=initial_date, soil_moisture=1000))
         self.assertTrue(controls.water_pump)
 
         current_date = initial_date
         for s in range(0, max_work_time.seconds + allowed_delta.seconds):
             current_date = initial_date + timedelta(seconds=s)
-            actual, controls = self.messages.echo_message(Sensors(date_time=current_date, soil_moisture=1000))
+            actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=current_date, soil_moisture=1000))
 
             if not controls.water_pump:
                 break

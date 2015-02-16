@@ -18,6 +18,7 @@ class MessagesManager:
         self.ser.flush()
 
     def echo_message(self, obj):
+        self._process_()
         self.publish_message(obj)
 
         if isinstance(obj, Reset):
@@ -25,6 +26,8 @@ class MessagesManager:
         elif isinstance(obj, Sensors):
             return (self.pop_element(self.sensors, obj.debug_id),
                     self.pop_element(self.controls, obj.debug_id))
+
+        return None
 
     @timeout_decorator.timeout(20)
     def pop_element(self, collection, debug_id):
@@ -49,7 +52,7 @@ class MessagesManager:
 
         self.message = ''
 
-        #print (messages)
+        print (messages)
 
         for idx, mess in enumerate(messages):
             arguments = mess.split(",")
@@ -150,7 +153,7 @@ def date_to_seconds(value):
     return (value.replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds()
 
 def int_to_date(value):
-    if isinstance(value, datetime):
+    if value is None or isinstance(value, datetime):
         return value
 
     return datetime.fromtimestamp(int(value), tz=pytz.utc).replace(tzinfo=None)
