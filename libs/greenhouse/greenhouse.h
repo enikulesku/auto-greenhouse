@@ -20,11 +20,22 @@
 #define HUMIDIFIER      2
 #define HEATER          3
 
+
+#define SOIL_MOISTURE_DRY 800
+#define SOIL_MOISTURE_MOISTURIZED 100
+#define WATER_PUMP_MAX_WORK_TIME 60
+#define WATER_PUMP_MIN_DELAY 300
+
+#define REQUIRED_LIGHT_DAY_DURATION 43200 // 12 hours
+#define LAMP_ALLOWED_DELTA 300
+
 class Greenhouse {
 private:
     boolean debugMode;
     // Sensors state
     long timeSeconds;
+
+    uint32_t lightDayDurationSeconds;
 
     long sunriseSeconds;
 
@@ -40,6 +51,7 @@ private:
     // Controls state
     boolean controlStates[CONTROLS_COUNT];
     long controlStartTime[CONTROLS_COUNT];
+    boolean controlDisabled[CONTROLS_COUNT];
 
     void changeControl(uint8_t controlType, boolean on);
 
@@ -89,6 +101,10 @@ public:
         controlPins[controlType] = controlPin;
     }
 
+    void setDisabledControl(uint8_t controlType, boolean disable) {
+        controlDisabled[controlType] = disable;
+    }
+
     void setDebugId(int debugId) {
         Greenhouse::debugId = debugId;
     }
@@ -96,6 +112,12 @@ public:
     void printSensors();
 
     void printControls();
+
+    void controlWaterPump();
+
+    void controlLamp();
+
+    void calculateDayDuration();
 };
 
 long date2seconds(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second);

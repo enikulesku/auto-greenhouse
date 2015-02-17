@@ -1,3 +1,5 @@
+#include <stdbool.h>
+#include <Arduino.h>
 #include "greenhouse.h"
 
 const uint8_t daysInMonth[] PROGMEM = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -34,6 +36,10 @@ void Greenhouse::reset() {
 }
 
 void Greenhouse::changeControl(uint8_t controlType, boolean on) {
+    if (controlDisabled[controlType]) {
+        return;
+    }
+
     //ToDo: review
     if (controlStates[controlType] == on) {
         return;
@@ -65,7 +71,43 @@ void Greenhouse::doControl() {
 }
 
 void Greenhouse::process() {
-    //ToDo: put logic here
+    controlWaterPump();
+
+    controlLamp();
+}
+
+void Greenhouse::controlLamp() {
+    if (controlDisabled[LAMP]) {
+        return;
+    }
+
+    if (abs(lightDayDurationSeconds - REQUIRED_LIGHT_DAY_DURATION) < LAMP_ALLOWED_DELTA) {
+        return;
+    }
+
+    if (!controlStates[LAMP]) {
+        if ((timeSeconds < sunriseSeconds && sunriseSeconds - timeSeconds > LAMP_ALLOWED_DELTA) || (timeSeconds > sunsetSeconds)) {
+            //ToDo:
+        }
+    } else {
+
+    }
+}
+
+void Greenhouse::controlWaterPump() {
+    if (controlDisabled[WATER_PUMP]) {
+        return;
+    }
+
+    if (!controlStates[WATER_PUMP]) {
+        if (soilMoisture <= SOIL_MOISTURE_DRY && timeSeconds - controlStartTime[WATER_PUMP] > WATER_PUMP_MIN_DELAY) {
+            changeControl(WATER_PUMP, true);
+        }
+    } else {
+        if (soilMoisture >= SOIL_MOISTURE_MOISTURIZED || timeSeconds - controlStartTime[WATER_PUMP] > WATER_PUMP_MAX_WORK_TIME) {
+            changeControl(WATER_PUMP, false);
+        }
+    }
 }
 
 void Greenhouse::printSensors() {
@@ -125,4 +167,8 @@ long date2seconds(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8
     days += 365 * (year - 1970) + (year - 1972 + 3) / 4 - 1;
 
     return ((days * 24L + hour) * 60 + minute) * 60 + second;
+}
+
+void Greenhouse::calculateDayDuration() {
+    lightDayDurationSeconds = sunsetSeconds - sunriseSeconds;
 }

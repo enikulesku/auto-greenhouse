@@ -80,8 +80,12 @@ void setup() {
     //Controls
     greenhouse.setControlPin(WATER_PUMP, WATER_PUMP_PIN);
     greenhouse.setControlPin(LAMP, LAMP_PIN);
+
     greenhouse.setControlPin(HUMIDIFIER, HUMIDIFIER_PIN);
+    greenhouse.setDisabledControl(HUMIDIFIER, true); // Remove to unable HUMIDIFIER
+
     greenhouse.setControlPin(HEATER, HEATER_PIN);
+    greenhouse.setDisabledControl(HEATER, true); // Remove to unable HEATER
 
     greenhouse.setDebugMode(DEBUG_MODE); //ToDo: get it from CMake config
 
@@ -141,6 +145,8 @@ void readSensorsFromSerial() {
 
     mySunrise.Set(dateTime.month(), dateTime.day());
     greenhouse.setSunset(date2seconds(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0));
+
+    greenhouse.calculateDayDuration();
 
     greenhouse.setHumidity(command[3]);
     greenhouse.setTemperature(command[4]);

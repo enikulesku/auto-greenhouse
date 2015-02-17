@@ -47,7 +47,7 @@ class AutoGreenhouseTest(unittest.TestCase):
             self.assertAlmostEqual(msg="sunrise", first=expected.sunrise, second=actual.sunrise, delta=timedelta(minutes=20))
             self.assertAlmostEqual(msg="sunset", first=expected.sunset, second=actual.sunset, delta=timedelta(minutes=20))
 
-    def test_water_pump_by_value(self):
+    def test_water_pump_by_value_and_max_delay(self):
         actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=0), soil_moisture=10))
         self.assertFalse(controls.water_pump)
 
@@ -57,10 +57,16 @@ class AutoGreenhouseTest(unittest.TestCase):
         actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=2), soil_moisture=10))
         self.assertFalse(controls.water_pump)
 
+        # Ignored by max delay
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=3), soil_moisture=1000))
+        self.assertFalse(controls.water_pump)
+
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=4) + timedelta(minutes=5), soil_moisture=1000))
+        self.assertTrue(controls.water_pump)
 
     def test_water_pump_by_timeout(self):
         initial_date = datetime(2015, 1, 1)
-        max_work_time = timedelta(minutes=2)
+        max_work_time = timedelta(minutes=1)
         allowed_delta = timedelta(seconds=10)
 
         actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=initial_date, soil_moisture=1000))
