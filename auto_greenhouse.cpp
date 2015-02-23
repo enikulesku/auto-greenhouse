@@ -116,7 +116,7 @@ void loop() {
 
     greenhouse.doControl();
 
-    delay(100); //ToDo: review delay
+    delay(10); //ToDo: review delay
 }
 
 

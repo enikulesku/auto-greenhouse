@@ -16,8 +16,9 @@ class MessagesManager:
 
         self.closed = False
 
-        self.thread = threading.Thread(target=self.work())
+        self.thread = threading.Thread(target=self.work)
         self.thread.start()
+        time.sleep(1)
 
     def close(self):
         self.closed = True
@@ -25,32 +26,35 @@ class MessagesManager:
         self.ser.close()
 
     def publish_message(self, message):
+        print (message.__str__())
+
         self.ser.write(message.__str__())
         self.ser.flush()
 
     @timeout_decorator.timeout(20)
-    def echo_message(self, obj, sens=None, contrls=None):
-        self.publish_message(obj)
+    def echo_message(self, obj, sens=None, contrls=None, ignore_send=False):
+        if not ignore_send:
+            self.publish_message(obj)
 
-        time.sleep(0.05)
+        time.sleep(0.1)
 
         if isinstance(obj, Reset):
             reset = self.pop_element(self.resets, obj.debug_id)
             if not reset:
-                time.sleep(0.01)
-                return self.echo_message(obj)
+                time.sleep(0.5)
+                return self.echo_message(obj, ignore_send=not ignore_send)
 
             return reset
         elif isinstance(obj, Sensors):
             if not sens:
-                sens = self.pop_element(self.sensors, obj.debug_id),
+                sens = self.pop_element(self.sensors, obj.debug_id)
 
             if not contrls:
                 contrls = self.pop_element(self.controls, obj.debug_id)
 
             if not sens or not contrls:
-                time.sleep(0.01)
-                return self.echo_message(obj, sens=sens, contrls=contrls)
+                time.sleep(0.5)
+                return self.echo_message(obj, sens, contrls, not ignore_send)
 
             return sens, contrls
 
@@ -76,8 +80,6 @@ class MessagesManager:
 
         self.message = ''
 
-        print (messages)
-
         for idx, mess in enumerate(messages):
             arguments = mess.split(",")
 
@@ -99,6 +101,8 @@ class MessagesManager:
                 result = Reset.parse(arguments)
                 if result:
                     self.resets.append(result)
+            elif 'L' == command:
+                print arguments
 
             if not result:
                 if idx == len(messages) - 1:

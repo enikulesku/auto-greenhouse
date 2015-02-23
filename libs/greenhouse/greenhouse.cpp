@@ -5,6 +5,10 @@
 const uint8_t daysInMonth[] PROGMEM = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 void Greenhouse::init() {
+    for (i = 0; i < CONTROLS_COUNT; i++) {
+        controlStartTime[i] = 0;
+    }
+
     if (debugMode) {
         return;
     }
@@ -114,12 +118,33 @@ void Greenhouse::controlWaterPump() {
         return;
     }
 
+    Serial.print(START);
+    Serial.print(LOGGER);
+    Serial.print(SEP_COMMA);
+    Serial.print("debugId=");
+    Serial.print(debugId);
+    Serial.print(SEP_COMMA);
+    Serial.print("control_state=");
+    Serial.print(controlStates[WATER_PUMP]);
+    Serial.print(SEP_COMMA);
+    Serial.print("time_seconds=");
+    Serial.print(timeSeconds);
+    Serial.print(SEP_COMMA);
+    Serial.print("controlStartTime=");
+    Serial.print(controlStartTime[WATER_PUMP]);
+    Serial.print(SEP_COMMA);
+    Serial.print("souil_moisture=");
+    Serial.print(soilMoisture);
+    Serial.print(END);
+    Serial.print(LS);
+    Serial.flush();
+
     if (!controlStates[WATER_PUMP]) {
-        if (soilMoisture <= SOIL_MOISTURE_DRY && timeSeconds - controlStartTime[WATER_PUMP] > WATER_PUMP_MIN_DELAY) {
+        if (soilMoisture >= SOIL_MOISTURE_DRY && timeSeconds - controlStartTime[WATER_PUMP] > WATER_PUMP_MIN_DELAY) {
             changeControl(WATER_PUMP, true);
         }
     } else {
-        if (soilMoisture >= SOIL_MOISTURE_MOISTURIZED || timeSeconds - controlStartTime[WATER_PUMP] > WATER_PUMP_MAX_WORK_TIME) {
+        if (soilMoisture <= SOIL_MOISTURE_MOISTURIZED || timeSeconds - controlStartTime[WATER_PUMP] > WATER_PUMP_MAX_WORK_TIME) {
             changeControl(WATER_PUMP, false);
         }
     }

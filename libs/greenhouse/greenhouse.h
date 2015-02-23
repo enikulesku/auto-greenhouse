@@ -12,6 +12,7 @@
 #define CONTROL    'C'
 #define RESET      'R'
 #define SENSORS    'S'
+#define LOGGER    'L'
 #define LS         '\n'
 
 #define CONTROLS_COUNT  4
