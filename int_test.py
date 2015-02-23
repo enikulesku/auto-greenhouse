@@ -81,8 +81,44 @@ class AutoGreenhouseTest(unittest.TestCase):
         self.assertAlmostEqual(msg="turn off by timeout", first=initial_date + max_work_time, second=current_date, delta=allowed_delta)
 
     def test_lamp(self):
-        #ToDo: put test here
-        self.assertTrue(True)
+        initial_date = datetime(2015, 1, 1)
+        location = Location(('Odessa', 'Ukraine', 46.5, 30.77, 'UTC'))
+        sun = location.sun(local=False, date=initial_date)
+
+        sunrise_date = sun['sunrise'].replace(tzinfo=None)
+        sunset_date = sun['sunset'].replace(tzinfo=None)
+
+        sun_day_duration = sunset_date - sunrise_date
+        expected_day_duration = timedelta(hours=12)
+
+        expected_sunrise = sunrise_date - (expected_day_duration - sun_day_duration) / 2
+        expected_sunset = sunset_date + (expected_day_duration - sun_day_duration) / 2
+
+        delta = timedelta(minutes=15)
+
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=expected_sunrise - delta))
+        self.assertFalse(controls.lamp)
+
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=expected_sunrise + delta))
+        self.assertTrue(controls.lamp)
+
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=sunrise_date - delta))
+        self.assertTrue(controls.lamp)
+
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=sunrise_date + delta))
+        self.assertFalse(controls.lamp)
+
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=sunset_date - delta))
+        self.assertFalse(controls.lamp)
+
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=sunset_date + delta))
+        self.assertTrue(controls.lamp)
+
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=expected_sunset - delta))
+        self.assertTrue(controls.lamp)
+
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=expected_sunset + delta))
+        self.assertFalse(controls.lamp)
 
 
 if __name__ == '__main__':
