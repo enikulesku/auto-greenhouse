@@ -1,6 +1,5 @@
 #! /usr/bin/python2.7
 
-import serial
 import argparse
 import unittest
 import sys
@@ -14,12 +13,11 @@ class AutoGreenhouseTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ser = serial.Serial(cls.device, cls.baudrate, timeout=0.01)
-        cls.messages = MessagesManager(cls.ser)
+        cls.messages = MessagesManager(cls.device, cls.baudrate)
 
     @classmethod
     def tearDownClass(cls):
-        cls.ser.close()
+        cls.messages.close()
 
     def setUp(self):
         self.debug_id = 0

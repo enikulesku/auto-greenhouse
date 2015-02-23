@@ -3,18 +3,26 @@ import timeout_decorator
 import pytz
 import time
 import threading
+import serial
 
 class MessagesManager:
-    def __init__(self, ser):
-        self.ser = ser
+    def __init__(self, device, baudrate):
+        self.ser = serial.Serial(device, baudrate, timeout=0.01)
 
         self.resets = []
         self.controls = []
         self.sensors = []
         self.message = ''
 
-        thread = threading.Thread(target=self.work())
-        thread.start()
+        self.closed = False
+
+        self.thread = threading.Thread(target=self.work())
+        self.thread.start()
+
+    def close(self):
+        self.closed = True
+        self.thread.join()
+        self.ser.close()
 
     def publish_message(self, message):
         self.ser.write(message.__str__())
@@ -58,7 +66,7 @@ class MessagesManager:
         return None
 
     def work(self):
-        while True:
+        while not self.closed:
             self._process_()
 
     def _process_(self):
