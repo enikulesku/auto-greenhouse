@@ -81,16 +81,31 @@ void Greenhouse::controlLamp() {
         return;
     }
 
-    if (abs(lightDayDurationSeconds - REQUIRED_LIGHT_DAY_DURATION) < LAMP_ALLOWED_DELTA) {
+    lampWorkingDuration = REQUIRED_LIGHT_DAY_DURATION - (sunsetSeconds - sunriseSeconds);
+
+    if (lampWorkingDuration < LAMP_ALLOWED_DELTA) {
         return;
     }
 
+    expectedSunriseSeconds = sunriseSeconds - lampWorkingDuration / 2;
+    expectedSunsetSeconds = sunsetSeconds + lampWorkingDuration / 2;
+
     if (!controlStates[LAMP]) {
-        if ((timeSeconds < sunriseSeconds && sunriseSeconds - timeSeconds > LAMP_ALLOWED_DELTA) || (timeSeconds > sunsetSeconds)) {
-            //ToDo:
+        if (timeSeconds < sunriseSeconds && timeSeconds >= expectedSunriseSeconds) {
+            changeControl(LAMP, true);
+        }
+
+        if (timeSeconds > sunsetSeconds && timeSeconds <= expectedSunsetSeconds) {
+            changeControl(LAMP, true);
         }
     } else {
+        if (timeSeconds >= sunriseSeconds && timeSeconds <= sunsetSeconds) {
+            changeControl(LAMP, false);
+        }
 
+        if (timeSeconds < expectedSunriseSeconds || timeSeconds > expectedSunsetSeconds) {
+            changeControl(LAMP, false);
+        }
     }
 }
 
@@ -167,8 +182,4 @@ long date2seconds(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8
     days += 365 * (year - 1970) + (year - 1972 + 3) / 4 - 1;
 
     return ((days * 24L + hour) * 60 + minute) * 60 + second;
-}
-
-void Greenhouse::calculateDayDuration() {
-    lightDayDurationSeconds = sunsetSeconds - sunriseSeconds;
 }

@@ -146,8 +146,6 @@ void readSensorsFromSerial() {
     mySunrise.Set(dateTime.month(), dateTime.day());
     greenhouse.setSunset(date2seconds(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0));
 
-    greenhouse.calculateDayDuration();
-
     greenhouse.setHumidity(command[3]);
     greenhouse.setTemperature(command[4]);
     greenhouse.setSoilMoisture(command[5]);

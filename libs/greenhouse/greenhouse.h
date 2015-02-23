@@ -35,7 +35,9 @@ private:
     // Sensors state
     long timeSeconds;
 
-    uint32_t lightDayDurationSeconds;
+    uint32_t lampWorkingDuration;
+    long expectedSunriseSeconds;
+    long expectedSunsetSeconds;
 
     long sunriseSeconds;
 
@@ -116,8 +118,6 @@ public:
     void controlWaterPump();
 
     void controlLamp();
-
-    void calculateDayDuration();
 };
 
 long date2seconds(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second);

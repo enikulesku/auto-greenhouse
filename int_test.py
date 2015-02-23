@@ -82,6 +82,10 @@ class AutoGreenhouseTest(unittest.TestCase):
 
         self.assertAlmostEqual(msg="turn off by timeout", first=initial_date + max_work_time, second=current_date, delta=allowed_delta)
 
+    def test_lamp(self):
+        #ToDo: put test here
+        self.assertTrue(True)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Auto-Greenhouse Integration Test')
