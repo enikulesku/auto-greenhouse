@@ -14,7 +14,7 @@ class AutoGreenhouseTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ser = serial.Serial(cls.device, cls.baudrate, timeout=1)
+        cls.ser = serial.Serial(cls.device, cls.baudrate, timeout=0.01)
         cls.messages = MessagesManager(cls.ser)
 
     @classmethod

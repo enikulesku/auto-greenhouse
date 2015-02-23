@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import timeout_decorator
 import pytz
 import time
+import threading
 
 class MessagesManager:
     def __init__(self, ser):
@@ -12,38 +13,53 @@ class MessagesManager:
         self.sensors = []
         self.message = ''
 
+        thread = threading.Thread(target=self.work())
+        thread.start()
+
     def publish_message(self, message):
-        self._process_()
         self.ser.write(message.__str__())
         self.ser.flush()
 
-    def echo_message(self, obj):
-        self._process_()
+    @timeout_decorator.timeout(20)
+    def echo_message(self, obj, sens=None, contrls=None):
         self.publish_message(obj)
 
+        time.sleep(0.05)
+
         if isinstance(obj, Reset):
-            return self.pop_element(self.resets, obj.debug_id)
+            reset = self.pop_element(self.resets, obj.debug_id)
+            if not reset:
+                time.sleep(0.01)
+                return self.echo_message(obj)
+
+            return reset
         elif isinstance(obj, Sensors):
-            return (self.pop_element(self.sensors, obj.debug_id),
-                    self.pop_element(self.controls, obj.debug_id))
+            if not sens:
+                sens = self.pop_element(self.sensors, obj.debug_id),
+
+            if not contrls:
+                contrls = self.pop_element(self.controls, obj.debug_id)
+
+            if not sens or not contrls:
+                time.sleep(0.01)
+                return self.echo_message(obj, sens=sens, contrls=contrls)
+
+            return sens, contrls
 
         return None
 
-    @timeout_decorator.timeout(20)
     def pop_element(self, collection, debug_id):
+        while len(collection) != 0:
+            obj = collection.pop(0)
+
+            if obj.debug_id == debug_id:
+                return obj
+
+        return None
+
+    def work(self):
         while True:
-            if len(collection) == 0:
-                self._process_()
-
-            if len(collection) == 0:
-                time.sleep(0.05)
-                continue
-
-            while len(collection) != 0:
-                obj = collection.pop(0)
-
-                if obj.debug_id == debug_id:
-                    return obj
+            self._process_()
 
     def _process_(self):
         self.message += self.ser.readline()
