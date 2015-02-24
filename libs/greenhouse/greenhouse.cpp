@@ -1,30 +1,22 @@
-#include <stdbool.h>
 #include <Arduino.h>
 #include "greenhouse.h"
 
 const uint8_t daysInMonth[] PROGMEM = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 void Greenhouse::init() {
-    for (i = 0; i < CONTROLS_COUNT; i++) {
-        controlStartTime[i] = 0;
+    if (!debugMode) {
+        // Controls initialization
+        for (i = 0; i < CONTROLS_COUNT; i++) {
+            pinMode(controlPins[i], OUTPUT);
+        }
     }
 
-    if (debugMode) {
-        return;
-    }
-
-    // Controls initialization
-    for (i = 0; i < CONTROLS_COUNT; i++) {
-        pinMode(controlPins[i], OUTPUT);
-    }
+    resetToDefault();
 }
 
 
 void Greenhouse::reset() {
-    for (i = 0; i < CONTROLS_COUNT; i++) {
-        changeControl(controlPins[i], false);
-        controlStartTime[i] = 0;
-    }
+    resetToDefault();
 
     if (!debugMode) {
         return;
@@ -37,6 +29,17 @@ void Greenhouse::reset() {
     Serial.print(END);
     Serial.print(LS);
     Serial.flush();
+}
+
+void Greenhouse::resetToDefault() {
+    for (i = 0; i < CONTROLS_COUNT; i++) {
+        changeControl(controlPins[i], false);
+        controlStartTime[i] = 0;
+    }
+
+    soilMoisture = 0;
+    temperature = 0;
+    humidity = 0;
 }
 
 void Greenhouse::changeControl(uint8_t controlType, boolean on) {
@@ -117,27 +120,6 @@ void Greenhouse::controlWaterPump() {
     if (controlDisabled[WATER_PUMP]) {
         return;
     }
-
-    Serial.print(START);
-    Serial.print(LOGGER);
-    Serial.print(SEP_COMMA);
-    Serial.print("debugId=");
-    Serial.print(debugId);
-    Serial.print(SEP_COMMA);
-    Serial.print("control_state=");
-    Serial.print(controlStates[WATER_PUMP]);
-    Serial.print(SEP_COMMA);
-    Serial.print("time_seconds=");
-    Serial.print(timeSeconds);
-    Serial.print(SEP_COMMA);
-    Serial.print("controlStartTime=");
-    Serial.print(controlStartTime[WATER_PUMP]);
-    Serial.print(SEP_COMMA);
-    Serial.print("souil_moisture=");
-    Serial.print(soilMoisture);
-    Serial.print(END);
-    Serial.print(LS);
-    Serial.flush();
 
     if (!controlStates[WATER_PUMP]) {
         if (soilMoisture >= SOIL_MOISTURE_DRY && timeSeconds - controlStartTime[WATER_PUMP] > WATER_PUMP_MIN_DELAY) {

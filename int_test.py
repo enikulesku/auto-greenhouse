@@ -71,7 +71,7 @@ class AutoGreenhouseTest(unittest.TestCase):
         self.assertTrue(controls.water_pump)
 
         current_date = initial_date
-        for s in range(0, max_work_time.seconds + allowed_delta.seconds):
+        for s in range(0, max_work_time.seconds + allowed_delta.seconds, 15):
             current_date = initial_date + timedelta(seconds=s)
             actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=current_date, soil_moisture=1000))
 

@@ -26,8 +26,6 @@ class MessagesManager:
         self.ser.close()
 
     def publish_message(self, message):
-        print (message.__str__())
-
         self.ser.write(message.__str__())
         self.ser.flush()
 
@@ -41,7 +39,7 @@ class MessagesManager:
         if isinstance(obj, Reset):
             reset = self.pop_element(self.resets, obj.debug_id)
             if not reset:
-                time.sleep(0.5)
+                time.sleep(0.1)
                 return self.echo_message(obj, ignore_send=not ignore_send)
 
             return reset
@@ -53,7 +51,7 @@ class MessagesManager:
                 contrls = self.pop_element(self.controls, obj.debug_id)
 
             if not sens or not contrls:
-                time.sleep(0.5)
+                time.sleep(0.1)
                 return self.echo_message(obj, sens, contrls, not ignore_send)
 
             return sens, contrls
