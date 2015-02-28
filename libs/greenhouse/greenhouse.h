@@ -4,6 +4,7 @@
 #include "Arduino.h"
 
 #include "../RTC/RTClib.h"
+#include "../LCDI2C/LiquidCrystal_I2C.h"
 
 #define START      '^'
 #define END        '$'
@@ -12,7 +13,7 @@
 #define CONTROL    'C'
 #define RESET      'R'
 #define SENSORS    'S'
-#define LOGGER    'L'
+#define LOGGER     'L'
 #define LS         '\n'
 
 #define CONTROLS_COUNT  4
@@ -33,6 +34,7 @@
 class Greenhouse {
 private:
     boolean debugMode;
+    boolean logToSerial;
     // Sensors state
     long timeSeconds;
 
@@ -59,11 +61,15 @@ private:
     void changeControl(uint8_t controlType, boolean on);
 
     void process();
+    void printLcd();
 
     //Temp
     uint8_t i;
     int debugId;
+
 public:
+    LiquidCrystal_I2C* lcd;
+
     void init();
 
     void reset();
@@ -100,8 +106,14 @@ public:
         Greenhouse::debugMode = debugMode;
     }
 
+
+    void setLogToSerial(boolean logToSerial) {
+        Greenhouse::logToSerial = logToSerial;
+    }
+
     void setControlPin(uint8_t controlType, uint8_t controlPin) {
         controlPins[controlType] = controlPin;
+        controlDisabled[controlType] = false;
     }
 
     void setDisabledControl(uint8_t controlType, boolean disable) {

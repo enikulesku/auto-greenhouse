@@ -9,7 +9,8 @@
 
 #include "libs/greenhouse/greenhouse.h"
 
-#define DEBUG_MODE                  true
+#define DEBUG_MODE                  false
+#define LOG_TO_SERIAL               false
 #define COMMAND_PARAMS_COUNT        6
 
 //Sensors
@@ -34,7 +35,7 @@ Sunrise mySunrise(LATITUDE, LONGITUDE, TIMEZONE);
 
 Greenhouse greenhouse;
 
-LiquidCrystal_I2C lcd(0x20, 20, 4);
+LiquidCrystal_I2C* lcd = new LiquidCrystal_I2C(0x20, 20, 4);
 
 i2ckeypad kpd(0x27, 4, 4);
 
@@ -43,6 +44,7 @@ DateTime dateTime;
 int tmp;
 int i;
 int paramIndex;
+unsigned long previousMillis = 0;
 boolean commandStarted;
 boolean commandFinished;
 char commandValue[32];
@@ -69,12 +71,12 @@ void setup() {
             //rtc.adjust(DateTime(__DATE__, __TIME__));
         }
 
-        lcd.init();                      // initialize the lcd
+        lcd->init();                      // initialize the lcd
         kpd.init();
 
         // Print a message to the LCD.
-        lcd.backlight();
-        lcd.print("Hello, world!");
+        lcd->backlight();
+        greenhouse.lcd = lcd;
     }
 
     //Controls
@@ -88,6 +90,7 @@ void setup() {
     greenhouse.setDisabledControl(HEATER, true); // Remove to unable HEATER
 
     greenhouse.setDebugMode(DEBUG_MODE); //ToDo: get it from CMake config
+    greenhouse.setLogToSerial(LOG_TO_SERIAL);
 
     greenhouse.init();
 }
@@ -111,7 +114,10 @@ void loop() {
                 break;
         }
     } else {
-        readSensors();
+        if (millis() - previousMillis >= 1000) {
+            previousMillis = millis();
+            readSensors();
+        }
     }
 
     greenhouse.doControl();
@@ -122,7 +128,7 @@ void loop() {
 
 void readSensors() {
     dateTime = rtc.now();
-    greenhouse.setDateTime(date2seconds(dateTime.year(), dateTime.month(), dateTime.day(), dateTime.hour(), dateTime.minute(), dateTime.second()));
+    greenhouse.setDateTime(dateTime.unixtime());
 
     mySunrise.Rise(dateTime.month(), dateTime.day());
     greenhouse.setSunrise(date2seconds(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0));

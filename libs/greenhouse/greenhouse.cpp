@@ -8,6 +8,7 @@ void Greenhouse::init() {
         // Controls initialization
         for (i = 0; i < CONTROLS_COUNT; i++) {
             pinMode(controlPins[i], OUTPUT);
+            digitalWrite(controlPins[i], HIGH);
         }
     }
 
@@ -18,7 +19,7 @@ void Greenhouse::init() {
 void Greenhouse::reset() {
     resetToDefault();
 
-    if (!debugMode) {
+    if (!logToSerial) {
         return;
     }
 
@@ -33,8 +34,8 @@ void Greenhouse::reset() {
 
 void Greenhouse::resetToDefault() {
     for (i = 0; i < CONTROLS_COUNT; i++) {
-        changeControl(controlPins[i], false);
-        controlStartTime[i] = 0;
+        controlStates[i] = false;
+        controlStartTime[i] = 0L;
     }
 
     soilMoisture = 0;
@@ -57,22 +58,23 @@ void Greenhouse::changeControl(uint8_t controlType, boolean on) {
         controlStartTime[controlType] = timeSeconds;
     }
 
-
     if (debugMode) {
         return;
     }
 
-    digitalWrite(controlPins[controlType], on ? HIGH : LOW);
+    digitalWrite(controlPins[controlType], on ? LOW : HIGH);
 }
 
 void Greenhouse::doControl() {
-    if (debugMode) {
+    if (logToSerial) {
         printSensors();
     }
 
     process();
 
-    if (debugMode) {
+    printLcd();
+
+    if (logToSerial) {
         printControls();
     }
 }
@@ -120,7 +122,6 @@ void Greenhouse::controlWaterPump() {
     if (controlDisabled[WATER_PUMP]) {
         return;
     }
-
     if (!controlStates[WATER_PUMP]) {
         if (soilMoisture >= SOIL_MOISTURE_DRY && timeSeconds - controlStartTime[WATER_PUMP] > WATER_PUMP_MIN_DELAY) {
             changeControl(WATER_PUMP, true);
@@ -173,6 +174,45 @@ void Greenhouse::printControls() {
     Serial.print(LS);
 
     Serial.flush();
+}
+
+
+void Greenhouse::printLcd() {
+    if (!lcd) {
+        return;
+    }
+
+    lcd->setCursor(0, 0);
+    lcd->print("M=");
+    lcd->print(soilMoisture);
+    if (soilMoisture < 1000) {
+        lcd->print(" ");
+    }
+    if (soilMoisture < 100) {
+        lcd->print(" ");
+    }
+    if (soilMoisture < 10) {
+        lcd->print(" ");
+    }
+
+    lcd->setCursor(6, 0);
+    lcd->print(" H=");
+    lcd->print(humidity);
+    lcd->print(" T=");
+    lcd->print(temperature);
+
+    lcd->setCursor(0, 1);
+    lcd->print("P=");
+    lcd->print(controlStates[WATER_PUMP]);
+    lcd->print(" L=");
+    lcd->print(controlStates[LAMP]);
+    lcd->print(" Hu=");
+    lcd->print(controlStates[HUMIDIFIER]);
+    lcd->print(" He=");
+    lcd->print(controlStates[HEATER]);
+
+    lcd->setCursor(0, 2);
+    lcd->print(controlStartTime[WATER_PUMP]);
 }
 
 long date2seconds(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second) {
