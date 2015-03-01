@@ -9,8 +9,8 @@
 
 #include "libs/greenhouse/greenhouse.h"
 
-#define DEBUG_MODE                  false
-#define LOG_TO_SERIAL               false
+#define DEBUG_MODE                  true
+#define LOG_TO_SERIAL               true
 #define COMMAND_PARAMS_COUNT        6
 
 //Sensors
@@ -40,6 +40,8 @@ LiquidCrystal_I2C* lcd = new LiquidCrystal_I2C(0x20, 20, 4);
 i2ckeypad kpd(0x27, 4, 4);
 
 DateTime dateTime;
+DateTime sunriseDateTime;
+DateTime sunsetDateTime;
 
 int tmp;
 int i;
@@ -53,6 +55,8 @@ long command[COMMAND_PARAMS_COUNT];
 void readSensors();
 void readSensorsFromSerial();
 boolean parseCommand();
+
+void fillDates();
 
 void setup() {
     Serial.begin(115200);
@@ -70,6 +74,7 @@ void setup() {
             // following line sets the RTC to the date & time this sketch was compiled
             //rtc.adjust(DateTime(__DATE__, __TIME__));
         }
+        //rtc.adjust(DateTime(1425233800));
 
         lcd->init();                      // initialize the lcd
         kpd.init();
@@ -84,13 +89,13 @@ void setup() {
     greenhouse.setControlPin(LAMP, LAMP_PIN);
 
     greenhouse.setControlPin(HUMIDIFIER, HUMIDIFIER_PIN);
-    greenhouse.setDisabledControl(HUMIDIFIER, true); // Remove to unable HUMIDIFIER
+    greenhouse.disableControl(HUMIDIFIER, true); // Remove to unable HUMIDIFIER
 
     greenhouse.setControlPin(HEATER, HEATER_PIN);
-    greenhouse.setDisabledControl(HEATER, true); // Remove to unable HEATER
+    greenhouse.disableControl(HEATER, true); // Remove to unable HEATER
 
-    greenhouse.setDebugMode(DEBUG_MODE); //ToDo: get it from CMake config
-    greenhouse.setLogToSerial(LOG_TO_SERIAL);
+    greenhouse.debugMode = DEBUG_MODE; //ToDo: get it from CMake config
+    greenhouse.logToSerial = LOG_TO_SERIAL;
 
     greenhouse.init();
 }
@@ -102,11 +107,13 @@ void loop() {
             return;
         }
 
-        greenhouse.setDebugId(command[1]);
+        greenhouse.debugId =command[1];
 
         switch (command[0]) {
             case SENSORS:// sensors info
                 readSensorsFromSerial();
+
+                greenhouse.doControl();
                 break;
 
             case RESET:// reset
@@ -117,44 +124,45 @@ void loop() {
         if (millis() - previousMillis >= 1000) {
             previousMillis = millis();
             readSensors();
+            greenhouse.doControl();
         }
     }
 
-    greenhouse.doControl();
+
 
     delay(10); //ToDo: review delay
 }
 
+void fillDates() {
+    greenhouse.timeSeconds = dateTime.unixtime();
+
+    mySunrise.Rise(dateTime.month(), dateTime.day());
+    sunriseDateTime = DateTime(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0);
+    greenhouse.sunriseSeconds = sunriseDateTime.unixtime();
+
+    mySunrise.Set(dateTime.month(), dateTime.day());
+    sunsetDateTime = DateTime(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0);
+    greenhouse.sunsetSeconds = sunsetDateTime.unixtime();
+}
 
 void readSensors() {
     dateTime = rtc.now();
-    greenhouse.setDateTime(dateTime.unixtime());
 
-    mySunrise.Rise(dateTime.month(), dateTime.day());
-    greenhouse.setSunrise(date2seconds(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0));
+    fillDates();
 
-    mySunrise.Set(dateTime.month(), dateTime.day());
-    greenhouse.setSunset(date2seconds(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0));
-
-    greenhouse.setHumidity((int) dht.readHumidity());
-    greenhouse.setTemperature((int) dht.readTemperature());
-    greenhouse.setSoilMoisture(analogRead(SOIL_MOISTURE_SENSOR_PIN));
+    greenhouse.humidity = (int) dht.readHumidity();
+    greenhouse.temperature = (int) dht.readTemperature();
+    greenhouse.soilMoisture = analogRead(SOIL_MOISTURE_SENSOR_PIN);
 }
 
 void readSensorsFromSerial() {
-    dateTime = DateTime(command[2]);
+    dateTime = DateTime((uint32_t) command[2]);
 
-    greenhouse.setDateTime(command[2]);
+    fillDates();
 
-    mySunrise.Rise(dateTime.month(), dateTime.day());
-    greenhouse.setSunrise(date2seconds(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0));
-
-    mySunrise.Set(dateTime.month(), dateTime.day());
-    greenhouse.setSunset(date2seconds(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0));
-
-    greenhouse.setHumidity(command[3]);
-    greenhouse.setTemperature(command[4]);
-    greenhouse.setSoilMoisture(command[5]);
+    greenhouse.humidity = (int) command[3];
+    greenhouse.temperature = (int) command[4];
+    greenhouse.soilMoisture = (int) command[5];
 }
 
 boolean parseCommand() {

@@ -1,8 +1,6 @@
 #include <Arduino.h>
 #include "greenhouse.h"
 
-const uint8_t daysInMonth[] PROGMEM = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
 void Greenhouse::init() {
     if (!debugMode) {
         // Controls initialization
@@ -19,17 +17,10 @@ void Greenhouse::init() {
 void Greenhouse::reset() {
     resetToDefault();
 
-    if (!logToSerial) {
-        return;
+    if (logToSerial) {
+        p(&Serial, "^R,%d$\n", debugId);
+        Serial.flush();
     }
-
-    Serial.print(START);
-    Serial.print(RESET);
-    Serial.print(SEP_COMMA);
-    Serial.print(debugId);
-    Serial.print(END);
-    Serial.print(LS);
-    Serial.flush();
 }
 
 void Greenhouse::resetToDefault() {
@@ -134,44 +125,14 @@ void Greenhouse::controlWaterPump() {
 }
 
 void Greenhouse::printSensors() {
-    Serial.print(START);
-    Serial.print(SENSORS);
-    Serial.print(SEP_COMMA);
-
-    Serial.print(debugId);
-    Serial.print(SEP_COMMA);
-    Serial.print(timeSeconds);
-    Serial.print(SEP_COMMA);
-    Serial.print(humidity);
-    Serial.print(SEP_COMMA);
-    Serial.print(temperature);
-    Serial.print(SEP_COMMA);
-    Serial.print(soilMoisture);
-    Serial.print(SEP_COMMA);
-    Serial.print(sunriseSeconds);
-    Serial.print(SEP_COMMA);
-    Serial.print(sunsetSeconds);
-
-    Serial.print(END);
-    Serial.print(LS);
+    p(&Serial, "^S,%d,%d,%d,%d,%d,%d,%d$\n",
+            debugId, timeSeconds, humidity, temperature, soilMoisture, sunriseSeconds, sunsetSeconds);
 
     Serial.flush();
 };
 
 void Greenhouse::printControls() {
-    Serial.print(START);
-    Serial.print(CONTROL);
-    Serial.print(SEP_COMMA);
-    Serial.print(debugId);
-
-    for (i = 0; i < CONTROLS_COUNT; i++) {
-        Serial.print(SEP_COMMA);
-
-        Serial.print(controlStates[i]);
-    }
-
-    Serial.print(END);
-    Serial.print(LS);
+    p(lcd, "^C,%d,%d,%d,%d,%d$\n", debugId, controlStates[WATER_PUMP], controlStates[LAMP], controlStates[HUMIDIFIER], controlStates[HEATER]);
 
     Serial.flush();
 }
@@ -183,50 +144,42 @@ void Greenhouse::printLcd() {
     }
 
     lcd->setCursor(0, 0);
-    lcd->print("M=");
-    lcd->print(soilMoisture);
-    if (soilMoisture < 1000) {
-        lcd->print(" ");
-    }
-    if (soilMoisture < 100) {
-        lcd->print(" ");
-    }
-    if (soilMoisture < 10) {
-        lcd->print(" ");
-    }
-
-    lcd->setCursor(6, 0);
-    lcd->print(" H=");
-    lcd->print(humidity);
-    lcd->print(" T=");
-    lcd->print(temperature);
+    p(lcd, "M=%04d H=%02d%% T=%02dC", soilMoisture, humidity, temperature);
 
     lcd->setCursor(0, 1);
-    lcd->print("P=");
-    lcd->print(controlStates[WATER_PUMP]);
-    lcd->print(" L=");
-    lcd->print(controlStates[LAMP]);
-    lcd->print(" Hu=");
-    lcd->print(controlStates[HUMIDIFIER]);
-    lcd->print(" He=");
-    lcd->print(controlStates[HEATER]);
+    p(lcd, "Pu=%d La=%d Hu=%d He=%d", controlStates[WATER_PUMP], controlStates[LAMP], controlStates[HUMIDIFIER], controlStates[HEATER]);
 
     lcd->setCursor(0, 2);
-    lcd->print(controlStartTime[WATER_PUMP]);
+    dateTime = DateTime(timeSeconds);
+    printTime(true);
+
+    lcd->print(" ");
+    dateTime = DateTime(sunriseSeconds);
+    printTime(false);
+
+    lcd->print(" ");
+    dateTime = DateTime(sunsetSeconds);
+    printTime(false);
+
+    lcd->setCursor(0, 3);
+    printDate();
+
+    lcd->setCursor(9, 3);
+    dateTime = DateTime(expectedSunriseSeconds);
+    printTime(false);
+
+    lcd->print(" ");
+    dateTime = DateTime(expectedSunsetSeconds);
+    printTime(false);
 }
 
-long date2seconds(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second) {
-    uint32_t days = day;
+void Greenhouse::printDate() {
+    p(lcd, "%02d.%02d.%02d", dateTime.day(), dateTime.month(), dateTime.year() % 100);
+}
 
-    for (uint8_t i = 1; i < month; ++i) {
-        days += pgm_read_byte(daysInMonth + i - 1);
+void Greenhouse::printTime(boolean showSeconds) {
+    p(lcd, "%02d:%02d", dateTime.hour(), dateTime.minute());
+    if (showSeconds) {
+        p(lcd, ":%02d", dateTime.second());
     }
-
-    if (month > 2 && year % 4 == 0) {
-        ++days;
-    }
-
-    days += 365 * (year - 1970) + (year - 1972 + 3) / 4 - 1;
-
-    return ((days * 24L + hour) * 60 + minute) * 60 + second;
 }

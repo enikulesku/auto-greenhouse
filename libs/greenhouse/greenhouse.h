@@ -33,22 +33,10 @@
 
 class Greenhouse {
 private:
-    boolean debugMode;
-    boolean logToSerial;
-    // Sensors state
-    long timeSeconds;
-
     uint32_t lampWorkingDuration;
     long expectedSunriseSeconds;
     long expectedSunsetSeconds;
 
-    long sunriseSeconds;
-
-    long sunsetSeconds;
-
-    int humidity;
-    int temperature;
-    int soilMoisture;
 
     //Controls
     uint8_t controlPins[CONTROLS_COUNT];
@@ -64,11 +52,26 @@ private:
     void printLcd();
 
     //Temp
+    DateTime dateTime;
     uint8_t i;
-    int debugId;
 
 public:
+    int debugId;
+
     LiquidCrystal_I2C* lcd;
+
+    // Sensors state
+    long timeSeconds;
+    long sunriseSeconds;
+
+    long sunsetSeconds;
+
+    int humidity;
+    int temperature;
+    int soilMoisture;
+
+    boolean debugMode;
+    boolean logToSerial;
 
     void init();
 
@@ -76,52 +79,13 @@ public:
 
     void doControl();
 
-    //Sensors
-    void setDateTime(long timeSeconds) {
-        Greenhouse::timeSeconds = timeSeconds;
-    }
-
-    void setSunrise(long sunriseSeconds) {
-        Greenhouse::sunriseSeconds = sunriseSeconds;
-    }
-
-    void setSunset(long sunsetSeconds) {
-        Greenhouse::sunsetSeconds = sunsetSeconds;
-    }
-
-    void setHumidity(int humidity) {
-        Greenhouse::humidity = humidity;
-    }
-
-    void setTemperature(int temperature) {
-        Greenhouse::temperature = temperature;
-    }
-
-    void setSoilMoisture(int soilMoisture) {
-        Greenhouse::soilMoisture = soilMoisture;
-    }
-
-    //Control
-    void setDebugMode(boolean debugMode) {
-        Greenhouse::debugMode = debugMode;
-    }
-
-
-    void setLogToSerial(boolean logToSerial) {
-        Greenhouse::logToSerial = logToSerial;
-    }
-
     void setControlPin(uint8_t controlType, uint8_t controlPin) {
         controlPins[controlType] = controlPin;
         controlDisabled[controlType] = false;
     }
 
-    void setDisabledControl(uint8_t controlType, boolean disable) {
+    void disableControl(uint8_t controlType, boolean disable) {
         controlDisabled[controlType] = disable;
-    }
-
-    void setDebugId(int debugId) {
-        Greenhouse::debugId = debugId;
     }
 
     void printSensors();
@@ -133,6 +97,18 @@ public:
     void controlLamp();
 
     void resetToDefault();
+
+    void printTime(boolean showSeconds);
+
+    void printDate();
 };
 
-long date2seconds(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second);
+static void p(Print *printer, char const *fmt, ... ){
+    char buf[128]; // resulting string limited to 128 chars
+    va_list args;
+    va_start (args, fmt );
+    vsnprintf(buf, 128, fmt, args);
+    va_end (args);
+    printer->print(buf);
+}
+
