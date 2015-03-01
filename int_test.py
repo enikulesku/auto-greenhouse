@@ -7,6 +7,13 @@ from datetime import datetime, timedelta
 from astral import *
 from test_util import *
 
+DRY_SOIL = 50
+MOISTURED_SOIL = 20
+
+MAX_WORKING_TIME = timedelta(minutes=1)
+MIN_WORKING_DELAY = timedelta(minutes=10)
+EXPECTED_DAY_DURATION = timedelta(hours=12)
+
 class AutoGreenhouseTest(unittest.TestCase):
     baudrate = 0
     device = ''
@@ -46,34 +53,34 @@ class AutoGreenhouseTest(unittest.TestCase):
             self.assertAlmostEqual(msg="sunset", first=expected.sunset, second=actual.sunset, delta=timedelta(minutes=20))
 
     def test_water_pump_by_value_and_max_delay(self):
-        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=0), soil_moisture=10))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=0), soil_moisture=MOISTURED_SOIL))
         self.assertFalse(controls.water_pump)
 
-        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=1), soil_moisture=1000))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=1), soil_moisture=DRY_SOIL))
         self.assertTrue(controls.water_pump)
 
-        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=2), soil_moisture=10))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=2), soil_moisture=MOISTURED_SOIL))
         self.assertFalse(controls.water_pump)
 
         # Ignored by max delay
-        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=3), soil_moisture=1000))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=3), soil_moisture=DRY_SOIL))
         self.assertFalse(controls.water_pump)
 
-        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=4) + timedelta(minutes=5), soil_moisture=1000))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=datetime(2015, 1, 1, second=4) + MIN_WORKING_DELAY, soil_moisture=DRY_SOIL))
         self.assertTrue(controls.water_pump)
 
     def test_water_pump_by_timeout(self):
         initial_date = datetime(2015, 1, 1)
-        max_work_time = timedelta(minutes=1)
+        max_work_time = MAX_WORKING_TIME
         allowed_delta = timedelta(seconds=10)
 
-        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=initial_date, soil_moisture=1000))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=initial_date, soil_moisture=DRY_SOIL))
         self.assertTrue(controls.water_pump)
 
         current_date = initial_date
         for s in range(0, max_work_time.seconds + allowed_delta.seconds, 15):
             current_date = initial_date + timedelta(seconds=s)
-            actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=current_date, soil_moisture=1000))
+            actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=current_date, soil_moisture=DRY_SOIL))
 
             if not controls.water_pump:
                 break
@@ -89,7 +96,7 @@ class AutoGreenhouseTest(unittest.TestCase):
         sunset_date = sun['sunset'].replace(tzinfo=None)
 
         sun_day_duration = sunset_date - sunrise_date
-        expected_day_duration = timedelta(hours=12)
+        expected_day_duration = EXPECTED_DAY_DURATION
 
         expected_sunrise = sunrise_date - (expected_day_duration - sun_day_duration) / 2
         expected_sunset = sunset_date + (expected_day_duration - sun_day_duration) / 2
