@@ -2,7 +2,7 @@ Automated greenhouse
 =====
 Light
 ----
-**Sensors**: real-time clock
+**Sensors**: real-time clock, light sensor
 
 **Controlled devices**: fitolamp
 
@@ -16,10 +16,10 @@ Temperature
 ----
 **Sensors**: temperature sensor
 
-**Controlled devices**: heater
+**Controlled devices**: heater - **DISABLED**
 
 Humidity
 ----
 **Sensors**: humidity sensor
 
-**Controlled devices**: humiditifier
+**Controlled devices**: humiditifier  - **DISABLED**
