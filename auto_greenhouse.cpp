@@ -36,7 +36,7 @@ Sunrise mySunrise(LATITUDE, LONGITUDE, TIMEZONE);
 
 Greenhouse greenhouse;
 
-LiquidCrystal_I2C* lcd = new LiquidCrystal_I2C(0x20, 20, 4);
+LiquidCrystal_I2C* lcd;
 
 i2ckeypad kpd(0x27, 4, 4);
 
@@ -65,6 +65,9 @@ void setup() {
     mySunrise.Actual(); //Actual, Civil, Nautical, Astronomical
 
     if (!DEBUG_MODE) {
+        lcd = new LiquidCrystal_I2C(0x20, 20, 4);
+        greenhouse.lcd = lcd;
+
         Wire.begin();
 
         rtc.begin();
@@ -82,7 +85,6 @@ void setup() {
 
         // Print a message to the LCD.
         lcd->backlight();
-        greenhouse.lcd = lcd;
     }
 
     //Controls
@@ -128,10 +130,6 @@ void loop() {
             greenhouse.doControl();
         }
     }
-
-
-
-    delay(10); //ToDo: review delay
 }
 
 void fillDates() {

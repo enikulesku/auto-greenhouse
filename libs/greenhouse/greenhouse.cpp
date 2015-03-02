@@ -137,7 +137,6 @@ void Greenhouse::printControls() {
     Serial.flush();
 }
 
-
 void Greenhouse::printLcd() {
     if (!lcd) {
         return;
