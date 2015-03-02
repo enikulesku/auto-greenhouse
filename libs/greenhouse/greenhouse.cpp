@@ -125,7 +125,7 @@ void Greenhouse::controlWaterPump() {
 }
 
 void Greenhouse::printSensors() {
-    p(&Serial, "^S,%d,%d,%d,%d,%d,%d,%d$\n",
+    p(&Serial, "^S,%d,%ld,%d,%d,%d,%ld,%ld$\n",
             debugId, timeSeconds, humidity, temperature, soilMoisture, sunriseSeconds, sunsetSeconds);
 
     Serial.flush();
