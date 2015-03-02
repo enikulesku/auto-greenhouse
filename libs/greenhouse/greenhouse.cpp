@@ -125,8 +125,8 @@ void Greenhouse::controlWaterPump() {
 }
 
 void Greenhouse::printSensors() {
-    p(&Serial, "^S,%d,%ld,%d,%d,%d,%ld,%ld$\n",
-            debugId, timeSeconds, humidity, temperature, soilMoisture, sunriseSeconds, sunsetSeconds);
+    p(&Serial, "^S,%d,%ld,%d,%d,%d,%d,%ld,%ld$\n",
+            debugId, timeSeconds, humidity, temperature, soilMoisture, lightLevel, sunriseSeconds, sunsetSeconds);
 
     Serial.flush();
 };
@@ -150,34 +150,33 @@ void Greenhouse::printLcd() {
     p(lcd, "Pu=%d La=%d Hu=%d He=%d", controlStates[WATER_PUMP], controlStates[LAMP], controlStates[HUMIDIFIER], controlStates[HEATER]);
 
     lcd->setCursor(0, 2);
-    dateTime = DateTime(timeSeconds);
-    printTime(true);
+    printTime(timeSeconds, true);
 
     lcd->print(" ");
-    dateTime = DateTime(sunriseSeconds);
-    printTime(false);
+    printTime(sunriseSeconds, false);
 
     lcd->print(" ");
-    dateTime = DateTime(sunsetSeconds);
-    printTime(false);
+    printTime(sunsetSeconds, false);
 
     lcd->setCursor(0, 3);
-    printDate();
+    printDate(timeSeconds);
 
     lcd->setCursor(9, 3);
-    dateTime = DateTime(expectedSunriseSeconds);
-    printTime(false);
+    printTime(expectedSunriseSeconds, false);
 
     lcd->print(" ");
-    dateTime = DateTime(expectedSunsetSeconds);
-    printTime(false);
+    printTime(expectedSunsetSeconds, false);
 }
 
-void Greenhouse::printDate() {
+void Greenhouse::printDate(long seconds) {
+    dateTime = DateTime((uint32_t) seconds);
+
     p(lcd, "%02d.%02d.%02d", dateTime.day(), dateTime.month(), dateTime.year() % 100);
 }
 
-void Greenhouse::printTime(boolean showSeconds) {
+void Greenhouse::printTime(long seconds, boolean showSeconds) {
+    dateTime = DateTime((uint32_t) seconds);
+
     p(lcd, "%02d:%02d", dateTime.hour(), dateTime.minute());
     if (showSeconds) {
         p(lcd, ":%02d", dateTime.second());

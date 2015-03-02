@@ -69,6 +69,7 @@ public:
     int humidity;
     int temperature;
     int soilMoisture;
+    int lightLevel;
 
     boolean debugMode;
     boolean logToSerial;
@@ -98,9 +99,9 @@ public:
 
     void resetToDefault();
 
-    void printTime(boolean showSeconds);
+    void printTime(long seconds, boolean showSeconds);
 
-    void printDate();
+    void printDate(long seconds);
 };
 
 static void p(Print *printer, char const *fmt, ... ){

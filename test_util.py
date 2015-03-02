@@ -126,18 +126,19 @@ class Reset:
 
 
 class Sensors:
-    def __init__(self, debug_id, date_time=None, humidity=0, temperature=0, soil_moisture=0, sunrise=None, sunset=None):
+    def __init__(self, debug_id, date_time=None, humidity=0, temperature=0, soil_moisture=0, light_level=0, sunrise=None, sunset=None):
         self.debug_id = int(debug_id)
         self.date_time = int_to_date(date_time)
         self.humidity = int(humidity)
         self.temperature = int(temperature)
         self.soil_moisture = int(soil_moisture)
+        self.light_level = int(light_level)
         self.sunrise = int_to_date(sunrise)
         self.sunset = int_to_date(sunset)
 
     def __str__(self):
-        return '^S,{},{},{},{},{},{},{}$'.format(self.debug_id, date_to_seconds(self.date_time),
-                                   self.humidity, self.temperature, self.soil_moisture,
+        return '^S,{},{},{},{},{},{},{},{}$'.format(self.debug_id, date_to_seconds(self.date_time),
+                                   self.humidity, self.temperature, self.soil_moisture, self.light_level,
                                    date_to_seconds(self.sunrise), date_to_seconds(self.sunset))
 
     @staticmethod

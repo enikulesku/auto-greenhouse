@@ -11,11 +11,12 @@
 
 #define DEBUG_MODE                  true
 #define LOG_TO_SERIAL               true
-#define COMMAND_PARAMS_COUNT        6
+#define COMMAND_PARAMS_COUNT        7
 
 //Sensors
 #define DHT_PIN                     2
 #define SOIL_MOISTURE_SENSOR_PIN    0 //A0
+#define LIGHT_SENSOR_PIN            1 //A1
 #define LATITUDE                    46.5 //{
 #define LONGITUDE                   30.77 //{ Odesa, Ukraine, Europe - Latitude/Longitude and Timezone 	46.5/30.77, 0;
 #define TIMEZONE                    0 //{ using UTC to avoid problems with timezones
@@ -107,19 +108,19 @@ void loop() {
             return;
         }
 
-        greenhouse.debugId =command[1];
+        greenhouse.debugId = (int) command[1];
 
         switch (command[0]) {
             case SENSORS:// sensors info
                 readSensorsFromSerial();
-
-                greenhouse.doControl();
                 break;
 
             case RESET:// reset
                 greenhouse.reset();
                 break;
         }
+
+        greenhouse.doControl();
     } else {
         if (millis() - previousMillis >= 1000) {
             previousMillis = millis();
@@ -153,6 +154,7 @@ void readSensors() {
     greenhouse.humidity = (int) dht.readHumidity();
     greenhouse.temperature = (int) dht.readTemperature();
     greenhouse.soilMoisture = analogRead(SOIL_MOISTURE_SENSOR_PIN);
+    greenhouse.lightLevel = analogRead(LIGHT_SENSOR_PIN);
 }
 
 void readSensorsFromSerial() {
@@ -163,6 +165,7 @@ void readSensorsFromSerial() {
     greenhouse.humidity = (int) command[3];
     greenhouse.temperature = (int) command[4];
     greenhouse.soilMoisture = (int) command[5];
+    greenhouse.lightLevel = (int) command[6];
 }
 
 boolean parseCommand() {
