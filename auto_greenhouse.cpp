@@ -1,17 +1,12 @@
-#include "Arduino.h"
-#include "Wire/Wire.h"
-
-#include "libs/LCDI2C/LiquidCrystal_I2C.h"
-#include "libs/i2ckeypad/i2ckeypad.h"
-#include "libs/DHT/DHT.h"
-#include "libs/RTC/RTClib.h"
-#include "libs/Sunrise/Sunrise.h"
+#include <Arduino.h>
 
 #include "libs/greenhouse/greenhouse.h"
 
+#include "libs/greenhouse-lcd/greenhouse_lcd.h"
+#include "libs/greenhouse-debug/greenhouse_debug.h"
+
 #define DEBUG_MODE                  true
-#define LOG_TO_SERIAL               true
-#define COMMAND_PARAMS_COUNT        7
+#define LCD_ENABLED                 false
 
 //Sensors
 #define DHT_PIN                     2
@@ -27,193 +22,85 @@
 #define HUMIDIFIER_PIN              6
 #define HEATER_PIN                  7
 
-
-RTC_DS1307 rtc;
-
-DHT dht(DHT_PIN, DHT11);
-
-Sunrise mySunrise(LATITUDE, LONGITUDE, TIMEZONE);
-
 Greenhouse greenhouse;
 
-LiquidCrystal_I2C* lcd;
+Sunrise mySunrise(LATITUDE, LONGITUDE, TIMEZONE);
+RTC_DS1307 *rtc;
+DHT *dht;
 
-i2ckeypad kpd(0x27, 4, 4);
+LCDGreenhouse *lcdGreenhouse;
+LiquidCrystal_I2C *lcd;
+i2ckeypad *kpd;
 
-DateTime dateTime;
-DateTime sunriseDateTime;
-DateTime sunsetDateTime;
-
-int tmp;
 int i;
-int paramIndex;
 unsigned long previousMillis = 0;
-boolean commandStarted;
-boolean commandFinished;
-char commandValue[32];
-long command[COMMAND_PARAMS_COUNT];
-
-void readSensors();
-void readSensorsFromSerial();
-boolean parseCommand();
-
-void fillDates();
 
 void setup() {
     Serial.begin(115200);
 
+    Wire.begin();
+
+    greenhouse.mySunrise = &mySunrise;
     mySunrise.Actual(); //Actual, Civil, Nautical, Astronomical
 
-    if (!DEBUG_MODE) {
+    if (LCD_ENABLED) {
         lcd = new LiquidCrystal_I2C(0x20, 20, 4);
-        greenhouse.lcd = lcd;
+        kpd = new i2ckeypad(0x27, 4, 4);
 
-        Wire.begin();
+        greenhouse.handlers[0] = new LCDGreenhouse(&greenhouse, lcd, kpd);
 
-        rtc.begin();
-        dht.begin();
+        lcd->init();
+        kpd->init();
+    }
 
-        if (!rtc.isrunning()) {
+    if (DEBUG_MODE) {
+        greenhouse.handlers[1] = new DebugGreenhouse(&greenhouse, &Serial);
+    } else {
+        rtc = new RTC_DS1307;
+        rtc->begin();
+
+        dht = new DHT(DHT_PIN, DHT11);
+        dht->begin();
+
+        if (!rtc->isrunning()) {
             Serial.println("RTC is NOT running!");
             // following line sets the RTC to the date & time this sketch was compiled
             //rtc.adjust(DateTime(__DATE__, __TIME__));
         }
         //rtc.adjust(DateTime(1425233800));
 
-        lcd->init();                      // initialize the lcd
-        kpd.init();
+        //Sensors
+        greenhouse.soilMoisturePin = SOIL_MOISTURE_SENSOR_PIN;
+        greenhouse.lightPin = LIGHT_SENSOR_PIN;
 
-        // Print a message to the LCD.
-        lcd->backlight();
+        greenhouse.rtc = rtc;
+        greenhouse.dht = dht;
+
+        //Controls
+        greenhouse.setControlPin(WATER_PUMP, WATER_PUMP_PIN);
+        greenhouse.setControlPin(LAMP, LAMP_PIN);
+        greenhouse.setControlPin(HUMIDIFIER, HUMIDIFIER_PIN);
+        greenhouse.setControlPin(HEATER, HEATER_PIN);
     }
 
-    //Controls
-    greenhouse.setControlPin(WATER_PUMP, WATER_PUMP_PIN);
-    greenhouse.setControlPin(LAMP, LAMP_PIN);
-
-    greenhouse.setControlPin(HUMIDIFIER, HUMIDIFIER_PIN);
+    //Disabling
     greenhouse.disableControl(HUMIDIFIER, true); // Remove to unable HUMIDIFIER
-
-    greenhouse.setControlPin(HEATER, HEATER_PIN);
     greenhouse.disableControl(HEATER, true); // Remove to unable HEATER
 
-    greenhouse.debugMode = DEBUG_MODE; //ToDo: get it from CMake config
-    greenhouse.logToSerial = LOG_TO_SERIAL;
+    greenhouse.readOnlyMode = DEBUG_MODE; //ToDo: get it from CMake config
 
     greenhouse.init();
 }
 
 void loop() {
-    if (DEBUG_MODE) {
-        if (!parseCommand()) {
-            delay(10);
-            return;
-        }
+    if (!greenhouse.loop()) {
+        delay(10);
+        return;
+    }
 
-        greenhouse.debugId = (int) command[1];
-
-        switch (command[0]) {
-            case SENSORS:// sensors info
-                readSensorsFromSerial();
-                break;
-
-            case RESET:// reset
-                greenhouse.reset();
-                break;
-        }
-
+    if (millis() - previousMillis >= DEBUG_MODE ? 1 : 1000) {
+        previousMillis = millis();
+        greenhouse.readSensors();
         greenhouse.doControl();
-    } else {
-        if (millis() - previousMillis >= 1000) {
-            previousMillis = millis();
-            readSensors();
-            greenhouse.doControl();
-        }
     }
-}
-
-void fillDates() {
-    greenhouse.timeSeconds = dateTime.unixtime();
-
-    mySunrise.Rise(dateTime.month(), dateTime.day());
-    sunriseDateTime = DateTime(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0);
-    greenhouse.sunriseSeconds = sunriseDateTime.unixtime();
-
-    mySunrise.Set(dateTime.month(), dateTime.day());
-    sunsetDateTime = DateTime(dateTime.year(), dateTime.month(), dateTime.day(), mySunrise.Hour(), mySunrise.Minute(), 0);
-    greenhouse.sunsetSeconds = sunsetDateTime.unixtime();
-}
-
-void readSensors() {
-    dateTime = rtc.now();
-
-    fillDates();
-
-    greenhouse.humidity = (int) dht.readHumidity();
-    greenhouse.temperature = (int) dht.readTemperature();
-    greenhouse.soilMoisture = analogRead(SOIL_MOISTURE_SENSOR_PIN);
-    greenhouse.lightLevel = analogRead(LIGHT_SENSOR_PIN);
-}
-
-void readSensorsFromSerial() {
-    dateTime = DateTime((uint32_t) command[2]);
-
-    fillDates();
-
-    greenhouse.humidity = (int) command[3];
-    greenhouse.temperature = (int) command[4];
-    greenhouse.soilMoisture = (int) command[5];
-    greenhouse.lightLevel = (int) command[6];
-}
-
-boolean parseCommand() {
-    while (Serial.available()) {
-        tmp = Serial.read();
-
-        switch (tmp) {
-            case START:
-                commandStarted = true;
-
-                i = 0;
-                paramIndex = 0;
-                break;
-
-            case END:
-                if (commandStarted) {
-                    commandFinished = true;
-                }
-            case SEP_COMMA:
-                if (commandStarted) {
-                    commandValue[i] = '\0';
-
-                    if (paramIndex == 0) {
-                        command[0] = commandValue[0];
-                    } else if (paramIndex > 0 && paramIndex < COMMAND_PARAMS_COUNT) {
-                        command[paramIndex] = atol(commandValue);
-                    }
-
-                    i = 0;
-                    paramIndex++;
-
-                    if (commandFinished) {
-                        commandFinished = false;
-                        commandStarted = false;
-                        i = 0;
-                        paramIndex = 0;
-
-                        return true;
-                    }
-                }
-
-                break;
-
-            default:
-                if (commandStarted) {
-                    commandValue[i++] = (char) tmp;
-                }
-                break;
-        }
-    }
-
-    return false;
 }

@@ -24,6 +24,25 @@ project(AutoGreenhouse C CXX)
 generate_arduino_library(greenhouse-lib
     SRCS libs/greenhouse/greenhouse.cpp
     HDRS libs/greenhouse/greenhouse.h)
+#====================================================================#
+# Greenhouse Debug library
+#====================================================================#
+generate_arduino_library(greenhouse-debug-lib
+    SRCS libs/greenhouse-debug/greenhouse_debug.cpp
+    HDRS libs/greenhouse-debug/greenhouse_debug.h)
+#====================================================================#
+# Greenhouse LCD library
+#====================================================================#
+generate_arduino_library(greenhouse-lcd-lib
+    SRCS libs/greenhouse-lcd/greenhouse_lcd.cpp
+    HDRS libs/greenhouse-lcd/greenhouse_lcd.h)
+
+#====================================================================#
+# Utils library
+#====================================================================#
+generate_arduino_library(utils-lib
+    SRCS libs/utils/utils.cpp
+    HDRS libs/utils/utils.h)
 
 #====================================================================#
 # Real-Time Clock library
@@ -61,7 +80,7 @@ generate_arduino_library(i2ckeypad-lib
 #====================================================================#
 generate_arduino_firmware(greenhouse
     SRCS auto_greenhouse.cpp
-    LIBS greenhouse-lib RTC-lib DHT-lib Sunrise-lib LCDI2C-lib i2ckeypad-lib
+    LIBS greenhouse-lib RTC-lib DHT-lib Sunrise-lib LCDI2C-lib i2ckeypad-lib greenhouse-debug-lib greenhouse-lcd-lib utils-lib
     PORT  /dev/ttyACM0
     SERIAL python2.7 ${CMAKE_CURRENT_SOURCE_DIR}/int_test.py -D @SERIAL_PORT@ -b 115200
     BOARD uno)
