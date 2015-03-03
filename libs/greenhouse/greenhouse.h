@@ -21,6 +21,9 @@
 #define REQUIRED_LIGHT_DAY_DURATION 43200 // 12 hours
 #define LAMP_ALLOWED_DELTA 300
 
+#define LIGHT_LEVEL_TURN_OFF 400
+#define LIGHT_LEVEL_TURN_ON 200
+
 #define MAX_HANDLERS 2
 
 class Handler {

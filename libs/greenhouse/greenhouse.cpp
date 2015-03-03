@@ -129,6 +129,10 @@ void Greenhouse::controlLamp() {
     expectedSunsetSeconds = sunsetSeconds + lampWorkingDuration / 2;
 
     if (!controlStates[LAMP]) {
+        if (lightLevel <= LIGHT_LEVEL_TURN_ON) {
+            return;
+        }
+
         if (timeSeconds < sunriseSeconds && timeSeconds >= expectedSunriseSeconds) {
             changeControl(LAMP, true);
         }
@@ -142,6 +146,10 @@ void Greenhouse::controlLamp() {
         }
 
         if (timeSeconds < expectedSunriseSeconds || timeSeconds > expectedSunsetSeconds) {
+            changeControl(LAMP, false);
+        }
+
+        if (lightLevel <= LIGHT_LEVEL_TURN_OFF) {
             changeControl(LAMP, false);
         }
     }

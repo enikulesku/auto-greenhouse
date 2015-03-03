@@ -14,6 +14,9 @@ MAX_WORKING_TIME = timedelta(minutes=1)
 MIN_WORKING_DELAY = timedelta(minutes=10)
 EXPECTED_DAY_DURATION = timedelta(hours=12)
 
+LIGHT_LEVEL_TURN_OFF = 400
+LIGHT_LEVEL_TURN_ON = 200
+
 class AutoGreenhouseTest(unittest.TestCase):
     baudrate = 0
     device = ''
@@ -103,28 +106,40 @@ class AutoGreenhouseTest(unittest.TestCase):
 
         delta = timedelta(minutes=15)
 
-        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=expected_sunrise - delta))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=expected_sunrise - delta, light_level=LIGHT_LEVEL_TURN_ON))
         self.assertFalse(controls.lamp)
 
-        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=expected_sunrise + delta))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=expected_sunrise + delta, light_level=LIGHT_LEVEL_TURN_ON))
         self.assertTrue(controls.lamp)
 
-        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=sunrise_date - delta))
-        self.assertTrue(controls.lamp)
-
-        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=sunrise_date + delta))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=expected_sunrise + delta, light_level=LIGHT_LEVEL_TURN_OFF))
         self.assertFalse(controls.lamp)
 
-        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=sunset_date - delta))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=expected_sunrise + delta, light_level=LIGHT_LEVEL_TURN_ON))
+        self.assertTrue(controls.lamp)
+
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=sunrise_date - delta, light_level=LIGHT_LEVEL_TURN_ON))
+        self.assertTrue(controls.lamp)
+
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=sunrise_date + delta, light_level=LIGHT_LEVEL_TURN_ON))
         self.assertFalse(controls.lamp)
 
-        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=sunset_date + delta))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=sunset_date - delta, light_level=LIGHT_LEVEL_TURN_ON))
+        self.assertFalse(controls.lamp)
+
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=sunset_date + delta, light_level=LIGHT_LEVEL_TURN_ON))
         self.assertTrue(controls.lamp)
 
-        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=expected_sunset - delta))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=expected_sunset - delta, light_level=LIGHT_LEVEL_TURN_ON))
         self.assertTrue(controls.lamp)
 
-        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=expected_sunset + delta))
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=expected_sunset - delta, light_level=LIGHT_LEVEL_TURN_OFF))
+        self.assertFalse(controls.lamp)
+
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=expected_sunset + delta, light_level=LIGHT_LEVEL_TURN_ON))
+        self.assertFalse(controls.lamp)
+
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=expected_sunset + delta, light_level=LIGHT_LEVEL_TURN_OFF))
         self.assertFalse(controls.lamp)
 
 
