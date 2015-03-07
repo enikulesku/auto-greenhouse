@@ -6,8 +6,8 @@ DebugGreenhouse::DebugGreenhouse(Greenhouse *greenhouse, Stream *serial) {
 }
 
 void DebugGreenhouse::onReset() {
-    p(&Serial, "^R,%d$\n", debugId);
-    Serial.flush();
+    p(serial, "^R,%d$\n", debugId);
+    serial->flush();
 }
 
 void DebugGreenhouse::onControl() {
@@ -25,8 +25,8 @@ void DebugGreenhouse::onReadSensors() {
 }
 
 boolean DebugGreenhouse::onLoop() {
-    while (Serial.available()) {
-        tmp = Serial.read();
+    while (serial->available()) {
+        tmp = serial->read();
 
         switch (tmp) {
             case '^':
@@ -68,6 +68,7 @@ boolean DebugGreenhouse::onLoop() {
 
                             case 'R':// reset
                                 greenhouse->reset();
+
                                 return false;
                         }
                     }

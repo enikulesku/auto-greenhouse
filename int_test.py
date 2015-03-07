@@ -14,8 +14,8 @@ MAX_WORKING_TIME = timedelta(minutes=1)
 MIN_WORKING_DELAY = timedelta(minutes=10)
 EXPECTED_DAY_DURATION = timedelta(hours=12)
 
-LIGHT_LEVEL_TURN_OFF = 400
-LIGHT_LEVEL_TURN_ON = 200
+LIGHT_LEVEL_TURN_OFF = 700
+LIGHT_LEVEL_TURN_ON = 600
 
 class AutoGreenhouseTest(unittest.TestCase):
     baudrate = 0
@@ -122,10 +122,13 @@ class AutoGreenhouseTest(unittest.TestCase):
         self.assertTrue(controls.lamp)
 
         actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=sunrise_date + delta, light_level=LIGHT_LEVEL_TURN_ON))
+        self.assertTrue(controls.lamp)
+
+        actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=sunrise_date + delta, light_level=LIGHT_LEVEL_TURN_OFF))
         self.assertFalse(controls.lamp)
 
         actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=sunset_date - delta, light_level=LIGHT_LEVEL_TURN_ON))
-        self.assertFalse(controls.lamp)
+        self.assertTrue(controls.lamp)
 
         actual, controls = self.messages.echo_message(Sensors(self.next_debug_id(), date_time=sunset_date + delta, light_level=LIGHT_LEVEL_TURN_ON))
         self.assertTrue(controls.lamp)

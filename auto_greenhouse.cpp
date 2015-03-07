@@ -5,8 +5,8 @@
 #include "libs/greenhouse-lcd/greenhouse_lcd.h"
 #include "libs/greenhouse-debug/greenhouse_debug.h"
 
-#define DEBUG_MODE                  true
-#define LCD_ENABLED                 false
+#define DEBUG_MODE                  false
+#define LCD_ENABLED                 true
 
 //Sensors
 #define DHT_PIN                     2
@@ -43,7 +43,7 @@ void setup() {
     greenhouse.mySunrise = &mySunrise;
     mySunrise.Actual(); //Actual, Civil, Nautical, Astronomical
 
-    if (LCD_ENABLED) {
+    if (LCD_ENABLED && !DEBUG_MODE) {
         lcd = new LiquidCrystal_I2C(0x20, 20, 4);
         kpd = new i2ckeypad(0x27, 4, 4);
 
@@ -51,6 +51,8 @@ void setup() {
 
         lcd->init();
         kpd->init();
+
+        lcd->backlight();
     }
 
     if (DEBUG_MODE) {

@@ -143,7 +143,7 @@ class Sensors:
 
     @staticmethod
     def parse(raw_args):
-        if len(raw_args) != 8:
+        if len(raw_args) != 9:
             return None
 
         return Sensors(*raw_args[1:])
@@ -177,7 +177,7 @@ def date_to_seconds(value):
     if value is None:
         return 0
 
-    return (value.replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds()
+    return int ((value.replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds())
 
 def int_to_date(value):
     if value is None or isinstance(value, datetime):

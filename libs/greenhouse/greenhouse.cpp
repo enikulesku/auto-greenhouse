@@ -34,9 +34,7 @@ void Greenhouse::reset() {
 void Greenhouse::readSensors() {
     if (!readOnlyMode) {
         dateTime = rtc->now();
-    }
 
-    if (!readOnlyMode) {
         humidity = (int) dht->readHumidity();
         temperature = (int) dht->readTemperature();
         soilMoisture = analogRead(soilMoisturePin);
@@ -91,10 +89,10 @@ boolean Greenhouse::loop() {
     boolean done = true;
 
     for (i = 0; i < MAX_HANDLERS; i++) {
-        if (!Greenhouse::handlers[i]) {
+        if (!handlers[i]) {
             continue;
         }
-        done &= Greenhouse::handlers[i]->onLoop();
+        done &= handlers[i]->onLoop();
     }
 
     return done;
@@ -129,27 +127,11 @@ void Greenhouse::controlLamp() {
     expectedSunsetSeconds = sunsetSeconds + lampWorkingDuration / 2;
 
     if (!controlStates[LAMP]) {
-        if (lightLevel <= LIGHT_LEVEL_TURN_ON) {
-            return;
-        }
-
-        if (timeSeconds < sunriseSeconds && timeSeconds >= expectedSunriseSeconds) {
-            changeControl(LAMP, true);
-        }
-
-        if (timeSeconds > sunsetSeconds && timeSeconds <= expectedSunsetSeconds) {
+        if (lightLevel <= LIGHT_LEVEL_TURN_ON && timeSeconds >= expectedSunriseSeconds && timeSeconds <= expectedSunsetSeconds) {
             changeControl(LAMP, true);
         }
     } else {
-        if (timeSeconds >= sunriseSeconds && timeSeconds <= sunsetSeconds) {
-            changeControl(LAMP, false);
-        }
-
-        if (timeSeconds < expectedSunriseSeconds || timeSeconds > expectedSunsetSeconds) {
-            changeControl(LAMP, false);
-        }
-
-        if (lightLevel <= LIGHT_LEVEL_TURN_OFF) {
+        if (lightLevel >= LIGHT_LEVEL_TURN_OFF || timeSeconds < expectedSunriseSeconds || timeSeconds > expectedSunsetSeconds) {
             changeControl(LAMP, false);
         }
     }
