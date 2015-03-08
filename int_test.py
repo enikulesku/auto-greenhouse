@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 from astral import *
 from test_util import *
 
-DRY_SOIL = 50
-MOISTURED_SOIL = 20
+DRY_SOIL = 160
+MOISTURED_SOIL = 100
 
 MAX_WORKING_TIME = timedelta(minutes=1)
 MIN_WORKING_DELAY = timedelta(minutes=10)
