@@ -7,15 +7,15 @@ from datetime import datetime, timedelta
 from astral import *
 from test_util import *
 
-DRY_SOIL = 160
+DRY_SOIL = 140
 MOISTURED_SOIL = 100
 
 MAX_WORKING_TIME = timedelta(minutes=1)
 MIN_WORKING_DELAY = timedelta(minutes=10)
 EXPECTED_DAY_DURATION = timedelta(hours=12)
 
-LIGHT_LEVEL_TURN_OFF = 700
-LIGHT_LEVEL_TURN_ON = 600
+LIGHT_LEVEL_TURN_OFF = 900
+LIGHT_LEVEL_TURN_ON = 800
 
 class AutoGreenhouseTest(unittest.TestCase):
     baudrate = 0
