@@ -45,7 +45,12 @@ void LCDGreenhouse::onReset() {
 }
 
 boolean LCDGreenhouse::onLoop() {
-    //ToDo: handle keyboard here
+    switch (keypad->get_key()) {
+        case 'A':
+            (backLightStatus = !backLightStatus) ? lcd->backlight() : lcd->noBacklight();
+            break;
+    }
+
     return true;
 }
 

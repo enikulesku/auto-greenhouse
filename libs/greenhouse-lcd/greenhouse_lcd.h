@@ -14,6 +14,8 @@ private:
 
     DateTime dateTime;
 
+    boolean backLightStatus;
+
     void printDate(long seconds);
     void printTime(long seconds, boolean showSeconds);
 

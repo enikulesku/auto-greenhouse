@@ -51,8 +51,6 @@ void setup() {
 
         lcd->init();
         kpd->init();
-
-        lcd->backlight();
     }
 
     if (DEBUG_MODE) {
@@ -69,7 +67,7 @@ void setup() {
             // following line sets the RTC to the date & time this sketch was compiled
             //rtc.adjust(DateTime(__DATE__, __TIME__));
         }
-        //rtc.adjust(DateTime(1425233800));
+        //rtc->adjust(DateTime(1426239302));
 
         //Sensors
         greenhouse.soilMoisturePin = SOIL_MOISTURE_SENSOR_PIN;
