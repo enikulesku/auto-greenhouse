@@ -10,7 +10,7 @@ from test_util import *
 DRY_SOIL = 140
 MOISTURED_SOIL = 100
 
-MAX_WORKING_TIME = timedelta(minutes=1)
+MAX_WORKING_TIME = timedelta(seconds=15)
 MIN_WORKING_DELAY = timedelta(minutes=10)
 EXPECTED_DAY_DURATION = timedelta(hours=12)
 
