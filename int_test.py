@@ -14,8 +14,8 @@ MAX_WORKING_TIME = timedelta(seconds=15)
 MIN_WORKING_DELAY = timedelta(minutes=10)
 EXPECTED_DAY_DURATION = timedelta(hours=12)
 
-LIGHT_LEVEL_TURN_OFF = 900
-LIGHT_LEVEL_TURN_ON = 800
+LIGHT_LEVEL_TURN_OFF = 950
+LIGHT_LEVEL_TURN_ON = 850
 
 class AutoGreenhouseTest(unittest.TestCase):
     baudrate = 0
