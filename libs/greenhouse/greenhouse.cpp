@@ -70,10 +70,10 @@ unsigned long Greenhouse::calculateFromLastRun(uint8_t controlType) {
 
     unsigned long result = millis();
     if (result < startTime) {
-        startTime = LONG_MAX_VALUE - startTime;
+        result = result + (LONG_MAX_VALUE - startTime);
+    } else {
+        result -= startTime;
     }
-
-    result -= startTime;
 
     return result;
 }
