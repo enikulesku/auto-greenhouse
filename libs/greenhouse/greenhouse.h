@@ -26,8 +26,6 @@
 
 #define MAX_HANDLERS 2
 
-#define LONG_MAX_VALUE 4294967295UL
-
 class Handler {
 public:
     virtual void onReset() {}
@@ -50,8 +48,6 @@ private:
     void changeControl(uint8_t controlType, boolean on);
 
     void fillDates();
-
-    unsigned long calculateFromLastRun(uint8_t controlType);
 
     //Temp
     uint8_t i;
@@ -83,7 +79,7 @@ public:
     int lightLevel;
 
     boolean controlStates[CONTROLS_COUNT];
-    unsigned long controlStartTime[CONTROLS_COUNT];
+    long controlStartTime[CONTROLS_COUNT];
     boolean controlDisabled[CONTROLS_COUNT];
 
     boolean readOnlyMode;

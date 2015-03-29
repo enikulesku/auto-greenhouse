@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <stdint-gcc.h>
 #include "greenhouse.h"
 
 void Greenhouse::init() {
@@ -64,20 +63,6 @@ void Greenhouse::fillDates() {
     sunsetSeconds = sunsetDateTime.unixtime();
 }
 
-
-unsigned long Greenhouse::calculateFromLastRun(uint8_t controlType) {
-    unsigned long startTime = controlStartTime[controlType];
-
-    unsigned long result = millis();
-    if (result < startTime) {
-        startTime = LONG_MAX_VALUE - startTime;
-    }
-
-    result -= startTime;
-
-    return result;
-}
-
 void Greenhouse::changeControl(uint8_t controlType, boolean on) {
     if (controlDisabled[controlType]) {
         return;
@@ -90,7 +75,7 @@ void Greenhouse::changeControl(uint8_t controlType, boolean on) {
 
     controlStates[controlType] = on;
     if (on) {
-        controlStartTime[controlType] = millis();
+        controlStartTime[controlType] = timeSeconds;
     }
 
     if (readOnlyMode) {
@@ -157,11 +142,11 @@ void Greenhouse::controlWaterPump() {
         return;
     }
     if (!controlStates[WATER_PUMP]) {
-        if (soilMoisture >= SOIL_MOISTURE_DRY && calculateFromLastRun(WATER_PUMP) > WATER_PUMP_MIN_DELAY * 1000) {
+        if (soilMoisture >= SOIL_MOISTURE_DRY && timeSeconds - controlStartTime[WATER_PUMP] > WATER_PUMP_MIN_DELAY) {
             changeControl(WATER_PUMP, true);
         }
     } else {
-        if (soilMoisture <= SOIL_MOISTURE_MOISTURIZED || calculateFromLastRun(WATER_PUMP) > WATER_PUMP_MAX_WORK_TIME * 1000) {
+        if (soilMoisture <= SOIL_MOISTURE_MOISTURIZED || timeSeconds - controlStartTime[WATER_PUMP] > WATER_PUMP_MAX_WORK_TIME) {
             changeControl(WATER_PUMP, false);
         }
     }
