@@ -45,7 +45,7 @@ void LCDGreenhouse::onReset() {
 }
 
 boolean LCDGreenhouse::onLoop() {
-    if (greenhouse->errorCode) {
+    if (greenhouse->errorCode != 0) {
         lcd->clear();
 
         switch (greenhouse->errorCode) {

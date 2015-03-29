@@ -11,6 +11,10 @@ void Greenhouse::init() {
         }
     }
 
+    errorCode = 0;
+    previousMillis = 0;
+    previousSeconds = 0;
+
     reset();
 }
 
@@ -89,11 +93,11 @@ void Greenhouse::changeControl(uint8_t controlType, boolean on) {
 boolean Greenhouse::loop() {
     boolean done = true;
 
-    if (errorCode) {
+    if (errorCode != 0) {
         done = false;
     } else {
         errorCode = validate();
-        if (errorCode) {
+        if (errorCode != 0) {
             done = false;
             onError(errorCode);
         }
@@ -107,32 +111,6 @@ boolean Greenhouse::loop() {
     }
 
     return done;
-}
-
-
-void Greenhouse::onError(uint8_t errorCode) {
-    Greenhouse::errorCode = errorCode;
-
-    for (i = 0; i < CONTROLS_COUNT; i++) {
-        changeControl(i, false);
-    }
-}
-
-uint8_t Greenhouse::validate() {
-    if (readOnlyMode) {
-        return 0;
-    }
-
-    if (abs(millis() - previousMillis) > 5000) {
-        if (previousSeconds == timeSeconds) {
-            return 1;
-        }
-
-        previousSeconds = timeSeconds;
-        previousMillis = millis();
-    }
-
-    return 0;
 }
 
 // Logic here
@@ -155,10 +133,6 @@ void Greenhouse::controlLamp() {
     }
 
     lampWorkingDuration = REQUIRED_LIGHT_DAY_DURATION - (sunsetSeconds - sunriseSeconds);
-
-    if (lampWorkingDuration < LAMP_ALLOWED_DELTA) {
-        return;
-    }
 
     expectedSunriseSeconds = sunriseSeconds - lampWorkingDuration / 2;
     expectedSunsetSeconds = sunsetSeconds + lampWorkingDuration / 2;
@@ -187,4 +161,29 @@ void Greenhouse::controlWaterPump() {
             changeControl(WATER_PUMP, false);
         }
     }
+}
+
+void Greenhouse::onError(uint8_t errorCode) {
+    Greenhouse::errorCode = errorCode;
+
+    for (i = 0; i < CONTROLS_COUNT; i++) {
+        changeControl(i, false);
+    }
+}
+
+uint8_t Greenhouse::validate() {
+    if (readOnlyMode) {
+        return 0;
+    }
+
+    if (abs(millis() - previousMillis) > 5000) {
+        if (previousSeconds != 0 && previousSeconds == timeSeconds) {
+            return 1;
+        }
+
+        previousSeconds = timeSeconds;
+        previousMillis = millis();
+    }
+
+    return 0;
 }
