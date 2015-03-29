@@ -51,6 +51,10 @@ private:
 
     //Temp
     uint8_t i;
+
+    unsigned long previousMillis;
+    long previousSeconds;
+
 public:
     Handler *handlers[MAX_HANDLERS];
 
@@ -84,9 +88,15 @@ public:
 
     boolean readOnlyMode;
 
+    uint8_t errorCode;
+
     void init();
 
     void reset();
+
+    void onError(uint8_t errorCode);
+
+    uint8_t validate();
 
     void readSensors();
 

@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <stdint-gcc.h>
 #include "greenhouse.h"
 
 void Greenhouse::init() {
@@ -88,6 +89,16 @@ void Greenhouse::changeControl(uint8_t controlType, boolean on) {
 boolean Greenhouse::loop() {
     boolean done = true;
 
+    if (errorCode) {
+        done = false;
+    } else {
+        errorCode = validate();
+        if (errorCode) {
+            done = false;
+            onError(errorCode);
+        }
+    }
+
     for (i = 0; i < MAX_HANDLERS; i++) {
         if (!handlers[i]) {
             continue;
@@ -96,6 +107,32 @@ boolean Greenhouse::loop() {
     }
 
     return done;
+}
+
+
+void Greenhouse::onError(uint8_t errorCode) {
+    Greenhouse::errorCode = errorCode;
+
+    for (i = 0; i < CONTROLS_COUNT; i++) {
+        changeControl(i, false);
+    }
+}
+
+uint8_t Greenhouse::validate() {
+    if (readOnlyMode) {
+        return 0;
+    }
+
+    if (abs(millis() - previousMillis) > 5000) {
+        if (previousSeconds == timeSeconds) {
+            return 1;
+        }
+
+        previousSeconds = timeSeconds;
+        previousMillis = millis();
+    }
+
+    return 0;
 }
 
 // Logic here

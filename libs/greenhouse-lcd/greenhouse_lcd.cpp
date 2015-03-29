@@ -45,6 +45,24 @@ void LCDGreenhouse::onReset() {
 }
 
 boolean LCDGreenhouse::onLoop() {
+    if (greenhouse->errorCode) {
+        lcd->clear();
+
+        switch (greenhouse->errorCode) {
+            case 1:
+                lcd->print("RTC is broken");
+                break;
+        }
+
+        if (!backLightStatus) {
+            if (abs(millis() - backLightLastSwitch) > 2000) {
+                (backLightBlinkStatus = !backLightBlinkStatus) ? lcd->backlight() : lcd->noBacklight();
+
+                backLightLastSwitch = millis();
+            }
+        }
+    }
+
     switch (keypad->get_key()) {
         case 'A':
             (backLightStatus = !backLightStatus) ? lcd->backlight() : lcd->noBacklight();

@@ -16,6 +16,9 @@ private:
 
     boolean backLightStatus;
 
+    unsigned long backLightLastSwitch;
+    boolean backLightBlinkStatus;
+
     void printDate(long seconds);
     void printTime(long seconds, boolean showSeconds);
 
