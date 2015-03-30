@@ -73,7 +73,7 @@ public:
     long sunriseSeconds;
     long sunsetSeconds;
 
-    uint32_t lampWorkingDuration;
+    long lampWorkingDuration;
     long expectedSunriseSeconds;
     long expectedSunsetSeconds;
 

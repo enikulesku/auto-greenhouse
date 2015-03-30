@@ -61,6 +61,8 @@ boolean LCDGreenhouse::onLoop() {
                 backLightLastSwitch = millis();
             }
         }
+
+        delay(100);
     }
 
     switch (keypad->get_key()) {
